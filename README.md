@@ -1,1 +1,1 @@
-# TuneAndManner
+# wisely-diary
