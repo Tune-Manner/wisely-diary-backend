@@ -2,7 +2,7 @@
 name: "\U0001F381[Plan] 기획 관련 업무"
 about: 이 템플릿은 기획 업무를 추가하거나 수정할 때 사용됩니다.
 title: "\U0001F381[Plan] 기획 관련 업무"
-labels: ''
+labels: plannig
 assignees: ''
 
 ---
