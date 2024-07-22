@@ -11,4 +11,4 @@ assignees: ''
 [추가하려는 기획 업무에 대한 간략한 설명을 제공해주세요.]
 
 ### 관련 이슈 (Related Issues)
-기획 내용을 Discussions에 등록 후 링크를 기재해주세요.
+기획 내용을 Discussions 혹은 Wiki에 등록 후 링크를 기재해주세요.
