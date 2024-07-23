@@ -18,6 +18,9 @@ public class Music {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long musicCode;
-    private Long musicPath;
+    private String musicPath;
+    private String musicTitle;
+    private String musicLyrics;
     private LocalDateTime createdAt;
+
 }
