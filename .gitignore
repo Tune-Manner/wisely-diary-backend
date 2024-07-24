@@ -1,11 +1,15 @@
 HELP.md
 .gradle
 build/
+<<<<<<< HEAD
+!backend/gradle/wrapper/gradle-wrapper.jar
+=======
 !gradle/wrapper/gradle-wrapper.jar
+>>>>>>> 46a8515dd8f9d59b272840d0d87986f649bf84ff
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-/src/main/resources/application.yml
+/backend/src/main/resources/application.yml
 
 ### STS ###
 .apt_generated
