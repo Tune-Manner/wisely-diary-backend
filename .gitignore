@@ -1,11 +1,7 @@
 HELP.md
 .gradle
 build/
-<<<<<<< HEAD
-!backend/gradle/wrapper/gradle-wrapper.jar
-=======
 !gradle/wrapper/gradle-wrapper.jar
->>>>>>> 46a8515dd8f9d59b272840d0d87986f649bf84ff
 !**/src/main/**/build/
 !**/src/test/**/build/
 
@@ -41,3 +37,36 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+frontend/.atom/
+frontend/.buildlog/
+frontend/.history
+frontend/.svn/
+frontend/migrate_working_dir/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.pub-cache/
+frontend/.pub/
+frontend/build/
+
+# Symbolication related
+frontend/app.*.symbols
+
+# Obfuscation related
+frontend/app.*.map.json
+
+# Android Studio will place build artifacts here
+frontend/android/app/debug
+frontend/android/app/profile
+frontend/android/app/release
