@@ -7,10 +7,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tuneandmanner.wiselydiarybackend.music.domain.entity.Music;
 import tuneandmanner.wiselydiarybackend.music.dto.request.CreateMusicRequest;
 import tuneandmanner.wiselydiarybackend.music.service.MusicService;
-import tuneandmanner.wiselydiarybackend.music.service.SunoApiService;
 
 @Slf4j
 @RestController
