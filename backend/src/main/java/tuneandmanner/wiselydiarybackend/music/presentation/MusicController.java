@@ -3,10 +3,8 @@ package tuneandmanner.wiselydiarybackend.music.presentation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import tuneandmanner.wiselydiarybackend.music.dto.reponse.CreateMusicResponse;
 import tuneandmanner.wiselydiarybackend.music.dto.request.CreateMusicRequest;
 import tuneandmanner.wiselydiarybackend.music.service.MusicService;
 
@@ -24,5 +22,14 @@ public class MusicController {
     ) {
         musicService.createSongPrompt(request);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/create/{taskId}")
+    public ResponseEntity<CreateMusicResponse> createSongView(
+            @PathVariable String taskId
+    ) {
+        CreateMusicResponse createMusicResponse = musicService.getMusic(taskId);
+
+        return ResponseEntity.ok(createMusicResponse);
     }
 }
