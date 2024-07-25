@@ -17,19 +17,19 @@ public class MusicController {
     private final MusicService musicService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> createSong(
+    public ResponseEntity<CreateMusicResponse> createSong(
             @RequestBody CreateMusicRequest request
     ) {
-        musicService.createSongPrompt(request);
-        return ResponseEntity.ok().build();
+        CreateMusicResponse response = musicService.createSongPrompt(request);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/create/{taskId}")
-    public ResponseEntity<CreateMusicResponse> getMusic(
-            @PathVariable String taskId
-    ) {
-        CreateMusicResponse createMusicResponse = musicService.getMusic(taskId);
-
-        return ResponseEntity.ok(createMusicResponse);
-    }
+//    @GetMapping("/create/{taskId}")
+//    public ResponseEntity<CreateMusicResponse> getMusic(
+//            @PathVariable String taskId
+//    ) {
+//        CreateMusicResponse createMusicResponse = musicService.getMusic(taskId);
+//
+//        return ResponseEntity.ok(createMusicResponse);
+//    }
 }
