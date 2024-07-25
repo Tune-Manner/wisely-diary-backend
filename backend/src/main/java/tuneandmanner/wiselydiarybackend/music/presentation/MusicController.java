@@ -25,7 +25,7 @@ public class MusicController {
     }
 
     @GetMapping("/create/{taskId}")
-    public ResponseEntity<CreateMusicResponse> createSongView(
+    public ResponseEntity<CreateMusicResponse> getMusic(
             @PathVariable String taskId
     ) {
         CreateMusicResponse createMusicResponse = musicService.getMusic(taskId);
