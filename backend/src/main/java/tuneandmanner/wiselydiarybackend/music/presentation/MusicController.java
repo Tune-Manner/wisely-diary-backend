@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tuneandmanner.wiselydiarybackend.music.dto.reponse.CreateMusicResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.reponse.MusicPlaybackResponse;
 import tuneandmanner.wiselydiarybackend.music.dto.request.CreateMusicRequest;
 import tuneandmanner.wiselydiarybackend.music.service.MusicService;
 
@@ -24,12 +25,9 @@ public class MusicController {
         return ResponseEntity.ok(response);
     }
 
-//    @GetMapping("/create/{taskId}")
-//    public ResponseEntity<CreateMusicResponse> getMusic(
-//            @PathVariable String taskId
-//    ) {
-//        CreateMusicResponse createMusicResponse = musicService.getMusic(taskId);
-//
-//        return ResponseEntity.ok(createMusicResponse);
-//    }
+    @GetMapping("/{musicCode}/play")
+    public ResponseEntity<MusicPlaybackResponse> getMusicPlayback(@PathVariable Long musicCode) {
+        MusicPlaybackResponse response = musicService.getMusicPlayback(musicCode);
+        return ResponseEntity.ok(response);
+    }
 }
