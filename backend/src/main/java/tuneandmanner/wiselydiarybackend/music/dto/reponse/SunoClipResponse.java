@@ -16,6 +16,7 @@ public class SunoClipResponse {
     @Getter
     @ToString
     public static class Data {
+        @JsonProperty("task_id")
         private String taskId;
         private String status;
         private Map<String, Clip> clips;

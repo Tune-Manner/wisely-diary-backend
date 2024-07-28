@@ -12,12 +12,12 @@ public class MusicPlaybackResponse {
     private final Long musicCode;
     private final String musicTitle;
     private final String musicLyrics;
-    private final String playbackUrl;
+    private final SunoClipResponse clipResponse;
     private final LocalDateTime createdAt;
     private final Long diarySummaryCode;
 
     public static MusicPlaybackResponse of(Long musicCode, String musicTitle, String musicLyrics,
-                                           String playbackUrl, LocalDateTime createdAt, Long diarySummaryCode) {
-        return new MusicPlaybackResponse(musicCode, musicTitle, musicLyrics, playbackUrl, createdAt, diarySummaryCode);
+                                           SunoClipResponse clipResponse, LocalDateTime createdAt, Long diarySummaryCode) {
+        return new MusicPlaybackResponse(musicCode, musicTitle, musicLyrics, clipResponse, createdAt, diarySummaryCode);
     }
 }
