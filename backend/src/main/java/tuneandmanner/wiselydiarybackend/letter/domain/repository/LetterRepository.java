@@ -1,4 +1,7 @@
 package tuneandmanner.wiselydiarybackend.letter.domain.repository;
 
-public interface LetterRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import tuneandmanner.wiselydiarybackend.letter.domain.entity.Letter;
+
+public interface LetterRepository extends JpaRepository<Letter, Long> {
 }
