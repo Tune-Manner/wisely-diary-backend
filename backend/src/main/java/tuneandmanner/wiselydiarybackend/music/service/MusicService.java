@@ -8,13 +8,11 @@ import tuneandmanner.wiselydiarybackend.common.exception.NotFoundException;
 import tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode;
 import tuneandmanner.wiselydiarybackend.music.domain.entity.Music;
 import tuneandmanner.wiselydiarybackend.music.domain.repository.MusicRepository;
-import tuneandmanner.wiselydiarybackend.music.dto.reponse.CreateMusicResponse;
-import tuneandmanner.wiselydiarybackend.music.dto.reponse.MusicPlaybackResponse;
-import tuneandmanner.wiselydiarybackend.music.dto.reponse.SunoClipResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.CreateMusicResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.MusicPlaybackResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.SunoClipResponse;
 import tuneandmanner.wiselydiarybackend.music.dto.request.CreateMusicRequest;
 import tuneandmanner.wiselydiarybackend.music.dto.request.SunoApiRequest;
-
-import java.time.LocalDateTime;
 
 
 @Slf4j
