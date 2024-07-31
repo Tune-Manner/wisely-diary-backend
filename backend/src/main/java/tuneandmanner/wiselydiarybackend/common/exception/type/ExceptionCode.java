@@ -17,6 +17,7 @@ public enum ExceptionCode {
 
     // 400 Error
     CLIENT_ERROR(400, "클라이언트 에러가 발생했습니다."),
+    DOCUMENT_UPLOAD_ERROR(400, "문서 업로드 중 오류가 발생했습니다."),
 
     // 401 Error
     UNAUTHORIZED(401, "인증 되지 않은 요청입니다."),
