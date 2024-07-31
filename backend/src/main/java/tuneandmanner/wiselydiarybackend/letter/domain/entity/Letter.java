@@ -25,4 +25,22 @@ public class Letter {
     private LocalDateTime createdAt;
     private Long diarySummaryCode;
 
+    private Letter(Long letterCode, String letterContents, LocalDateTime createdAt, Long diarySummaryCode) {
+        this.letterCode = letterCode;
+        this.letterContents = letterContents;
+        this.createdAt = createdAt;
+        this.diarySummaryCode = diarySummaryCode;
+    }
+
+    public static Letter of(
+            final Long letterCode, final Long diarySummaryCode,
+            final String letterContents, final LocalDateTime createdAt
+    ) {
+        return new Letter(
+                letterCode,
+                letterContents,
+                createdAt,
+                diarySummaryCode
+        );
+    }
 }
