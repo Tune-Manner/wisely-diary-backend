@@ -24,7 +24,7 @@ public class DiaryService {
         Diary diary = diaryRepository.findById(diaryCode)
                 .orElseThrow(() -> new RuntimeException("일기를 찾을 수 없습니다."));
 
-        String query = "이 일기 내용을 바탕으로 따뜻한 위로와 격려의 편지를 작성해주세요.";
+        String query = "이 일기 내용을 바탕으로 따뜻한 위로와 격려의 편지를 한국어로 작성해주세요.";
         String context = String.format("일기 내용: %s\n감정 코드: %d",
                 diary.getDiaryContents(),
                 diary.getEmotionCode());

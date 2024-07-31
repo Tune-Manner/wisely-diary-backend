@@ -34,7 +34,7 @@ public class RAGService {
      */
     public String generateResponse(String query, String context, String storeType) {
         // 벡터 저장소에서 유사한 문서 검색
-        List<String> similarDocuments = vectorStoreService.searchSimilarDocuments(query, storeType);
+        List<String> similarDocuments = vectorStoreService.searchSimilarDocuments(context, storeType);
 
         // 프롬프트 생성
         Prompt prompt = createPrompt(query, context, similarDocuments);

@@ -1,6 +1,7 @@
 package tuneandmanner.wiselydiarybackend.common.vectorstore;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.vectorstore.PgVectorStore;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -86,15 +87,15 @@ public class CustomPgVectorStore extends PgVectorStore implements InitializingBe
     public List<Document> similaritySearch(SearchRequest request) {
         List<Double> queryEmbedding = embeddingModel.embed(request.getQuery());
         String sql = String.format(
-                "SELECT id, content, metadata, embedding <=> ? as distance " +
+                "SELECT id, content, metadata, embedding <-> CAST(? AS vector) as distance " +
                         "FROM %s " +
-                        "ORDER BY embedding <=> ? " +
+                        "ORDER BY embedding <-> CAST(? AS vector) " +
                         "LIMIT ?",
                 tableName);
 
         return jdbcTemplate.query(sql, new Object[]{
-                queryEmbedding.stream().mapToDouble(Double::doubleValue).toArray(),
-                queryEmbedding.stream().mapToDouble(Double::doubleValue).toArray(),
+                queryEmbedding.toArray(new Double[0]),
+                queryEmbedding.toArray(new Double[0]),
                 request.getTopK()
         }, new RowMapper<Document>() {
             @Override
@@ -109,9 +110,11 @@ public class CustomPgVectorStore extends PgVectorStore implements InitializingBe
     }
 
     private Map<String, Object> parseMetadata(String metadataJson) {
-        // JSON 문자열을 Map으로 파싱하는 로직을 구현해야 합니다.
-        // 여기서는 간단히 빈 Map을 반환합니다.
-        return Map.of();
+        try {
+            return objectMapper.readValue(metadataJson, new TypeReference<Map<String, Object>>() {});
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error parsing metadata JSON", e);
+        }
     }
 
     // 필요한 경우 다른 메서드들도 오버라이드하여 tableName을 사용하도록 수정할 수 있습니다.
