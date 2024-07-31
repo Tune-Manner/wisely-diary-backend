@@ -20,14 +20,21 @@ public class CartoonService {
     private final CartoonRepository cartoonRepository;
     private final DiarySummaryRepository diarySummaryRepository;
     private final DalleApiService dalleApiService;
+    private final ChatGptService chatGptService;
 
     @Transactional
     public String createCartoonPrompt(CreateCartoonRequest request) {
+        log.info("CartoonService.Create cartoon prompt");
+
         DiarySummary diarySummary = diarySummaryRepository.findById(request.getDiarySummaryCode())
                 .orElseThrow(() -> new RuntimeException("Diary summary not found"));
 
         try {
-            String cartoonPath = dalleApiService.generateCartoonPrompt(diarySummary.getDiarySummaryContents());
+            // ChatGptService에서 prompt생성
+            String generatedPrompt = chatGptService.generateCartoonPrompt(diarySummary.getDiarySummaryContents());
+
+            // Use the generated prompt to create an image with DalleApiService
+            String cartoonPath = dalleApiService.generateCartoonPrompt(generatedPrompt);
 
             Cartoon cartoon = Cartoon.builder()
                     .cartoonPath(cartoonPath)
@@ -37,6 +44,7 @@ public class CartoonService {
 
             cartoonRepository.save(cartoon);
             return cartoonPath;
+
         } catch (Exception e) {
             log.error("Error creating cartoon", e);
             throw new RuntimeException("Failed to create cartoon", e);

@@ -14,16 +14,26 @@ import org.springframework.web.client.RestTemplate;
 @Setter
 @Configuration
 @ConfigurationProperties(prefix = "spring.ai.openai")
-public class DalleConfig {
+public class OpenAiConfig {
     private String apiKey;
+    private String chatModel;
+    private String imageSize;
+    private String imageModel;
+    private String imageQuality;
+    private String imageStyle;
 
     @PostConstruct
-    public void logApiKey() {
+    public void logConfig() {
         if (apiKey != null && !apiKey.isEmpty()) {
-            log.info("DALL-E API Key: {}", apiKey.substring(0, Math.min(apiKey.length(), 5)) + "...");
+            log.info("OpenAI API Key: {}", apiKey.substring(0, Math.min(apiKey.length(), 5)) + "...");
         } else {
-            log.warn("DALL-E API Key is not set or empty");
+            log.warn("OpenAI API Key is not set or empty");
         }
+        log.info("ChatGPT Model: {}", chatModel);
+        log.info("DALL-E Image Model: {}", imageModel);
+        log.info("DALL-E Image Size: {}", imageSize);
+        log.info("DALL-E Image Quality: {}", imageQuality);
+        log.info("DALL-E Image Style: {}", imageStyle);
     }
 
     @Bean
