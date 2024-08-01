@@ -27,7 +27,12 @@ public class DalleApiService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(openAiConfig.getApiKey());
 
-        String refinedPrompt = prompt;
+        String refinedPrompt = "Create a single image with 4 webtoon-style comic panels in a 2x2 grid. " +
+                "Use simple, clean line art with black lines on a white background. " +
+                "Add small pops of pastel color only to characters and minimal background elements. " +
+                "Depict all characters with typical Korean features and hairstyles. " +
+                "Do not include text or speech bubbles. " +
+                prompt;
 
         refinedPrompt = truncatePrompt(refinedPrompt, 1000);  // DALL-E 3 has a 4000 character limit
 
@@ -38,8 +43,8 @@ public class DalleApiService {
                 "prompt", refinedPrompt,
                 "n", 1,
                 "size", openAiConfig.getImageSize(),
-                "quality", openAiConfig.getImageQuality(),
-                "style", openAiConfig.getImageStyle()
+                "quality", openAiConfig.getImageQuality()
+
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);

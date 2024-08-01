@@ -29,19 +29,19 @@ public class ChatGptService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(openAiConfig.getApiKey());
 
-        String systemMessage = "You are an expert in creating prompts for diverse comic styles from around the world. " +
-                "Always follow these guidelines:\n" +
-                "1. Create exactly 4 panels in a 2x2 grid layout.\n" +
-                "2. Use simple black lines on a white background.\n" +
-                "3. Focus on the main character (a 19-year-old woman) and her experiences.\n" +
-                "4. Accurately reflect the events and emotions described in the diary.\n" +
-                "5. If celebrities or specific individuals are mentioned, depict them accordingly, not the main character.\n" +
-                "6. Do not add extra scenes or details not mentioned in the diary.\n" +
-                "7. Do not use text or speech bubbles.\n" +
-                "Always format your response as: 'Create a single image with 4 comic panels in a 2x2 grid layout, using a [specific style] comic approach. [Detailed description of each panel here]'";
+        String systemMessage = "You are an expert in creating prompts for webtoon-style comics. " +
+                "Create 4 panel descriptions based on the given diary entry. Be concise but complete. " +
+                "Follow these guidelines:\n" +
+                "1. Use a simple, clean line art style with black lines on a white background.\n" +
+                "2. Add small pops of pastel color only to characters and minimal background elements.\n" +
+                "3. Accurately reflect events and emotions from the diary.\n" +
+                "4. Depict celebrities or idols as public figures, not friends.\n" +
+                "5. Do not use text or speech bubbles.\n" +
+                "6. Depict all characters with typical Korean features and hairstyles.\n" +
+                "Format your response as: 'Create a single image with 4 webtoon-style comic panels in a 2x2 grid:\n" +
+                "P1: [Brief description]\nP2: [Brief description]\nP3: [Brief description]\nP4: [Brief description]'";
 
-        String userPrompt = "Based on this diary entry, create a prompt for a 4-panel comic in an appropriate cultural style: \"" + diarySummary + "\"";
-
+        String userPrompt = "Based on this diary entry, create a prompt for a 4-panel webtoon-style comic: \"" + diarySummary + "\"";
 
 
         Map<String, Object> requestBody = Map.of(
@@ -51,7 +51,7 @@ public class ChatGptService {
                         Map.of("role", "user", "content", userPrompt)
                 ),
                 "temperature", 0.5,
-                "max_tokens", 500
+                "max_tokens", 1000
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);

@@ -20,12 +20,11 @@ public class OpenAiConfig {
     private String imageSize;
     private String imageModel;
     private String imageQuality;
-    private String imageStyle;
 
     @PostConstruct
     public void logConfig() {
         if (apiKey != null && !apiKey.isEmpty()) {
-            log.info("OpenAI API Key: {}", apiKey.substring(0, Math.min(apiKey.length(), 5)) + "...");
+            log.info("OpenAI API Key: {}", apiKey.substring(0, Math.min(apiKey.length(), 4)) + "...");
         } else {
             log.warn("OpenAI API Key is not set or empty");
         }
@@ -33,7 +32,6 @@ public class OpenAiConfig {
         log.info("DALL-E Image Model: {}", imageModel);
         log.info("DALL-E Image Size: {}", imageSize);
         log.info("DALL-E Image Quality: {}", imageQuality);
-        log.info("DALL-E Image Style: {}", imageStyle);
     }
 
     @Bean
