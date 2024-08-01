@@ -43,7 +43,6 @@ public class ChatGptService {
 
         String userPrompt = "Based on this diary entry, create a prompt for a 4-panel webtoon-style comic: \"" + diarySummary + "\"";
 
-
         Map<String, Object> requestBody = Map.of(
                 "model", openAiConfig.getChatModel(),
                 "messages", List.of(
@@ -65,6 +64,7 @@ public class ChatGptService {
             );
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                log.info("여기확인1: "+ extractPromptFromResponse(response.getBody()));
                 return extractPromptFromResponse(response.getBody());
             }
 
