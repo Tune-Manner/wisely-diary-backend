@@ -6,6 +6,8 @@ import tuneandmanner.wiselydiarybackend.diary.domain.entity.Diary;
 import tuneandmanner.wiselydiarybackend.diary.domain.repository.DiaryRepository;
 import tuneandmanner.wiselydiarybackend.rag.service.RAGService;
 
+import java.util.Map;
+
 @Service
 public class DiaryService {
 
@@ -20,7 +22,7 @@ public class DiaryService {
      * @param diaryCode 일기 코드
      * @return 생성된 편지
      */
-    public String generateLetter(Long diaryCode) {
+    public Map<String, String> generateLetter(Long diaryCode) {
         Diary diary = diaryRepository.findById(diaryCode)
                 .orElseThrow(() -> new RuntimeException("일기를 찾을 수 없습니다."));
 
