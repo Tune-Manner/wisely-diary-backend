@@ -32,15 +32,16 @@ public class RAGService {
      * @param context 추가 컨텍스트 정보
      * @return 생성된 응답
      */
-    public String generateResponse(String query, String context, String storeType) {
-        // 벡터 저장소에서 유사한 문서 검색
+    public Map<String, String> generateResponse(String query, String context, String storeType) {
         List<String> similarDocuments = vectorStoreService.searchSimilarDocuments(context, storeType);
-
-        // 프롬프트 생성
         Prompt prompt = createPrompt(query, context, similarDocuments);
+        String response = openAIService.generateResponse(prompt);
 
-        // OpenAI에 프롬프트 전송 및 응답 생성
-        return openAIService.generateResponse(prompt);
+        Map<String, String> result = new HashMap<>();
+        result.put("response", response);
+        result.put("similarDocuments", String.join("\n", similarDocuments));
+
+        return result;
     }
 
     /**

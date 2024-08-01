@@ -1,5 +1,8 @@
 package tuneandmanner.wiselydiarybackend.common.config;
 
+import org.springframework.ai.document.MetadataMode;
+import org.springframework.ai.openai.OpenAiEmbeddingOptions;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ai.openai.OpenAiChatModel;
@@ -24,7 +27,11 @@ public class OpenAIConfig {
     }
 
     @Bean
+    @Qualifier("openAiEmbeddingModel")
     public OpenAiEmbeddingModel openAiEmbeddingModel(OpenAiApi openAiApi) {
-        return new OpenAiEmbeddingModel(openAiApi);
+        OpenAiEmbeddingOptions options = OpenAiEmbeddingOptions.builder()
+                .withModel("text-embedding-3-small")
+                .build();
+        return new OpenAiEmbeddingModel(openAiApi, MetadataMode.EMBED, options);
     }
 }
