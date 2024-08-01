@@ -3,6 +3,8 @@ package tuneandmanner.wiselydiarybackend.common.vectorstore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.vectorstore.PgVectorStore;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,6 +22,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class CustomPgVectorStore extends PgVectorStore implements InitializingBean {
+
+    private static final Logger logger = LoggerFactory.getLogger(CustomPgVectorStore.class);
 
     private final String tableName;
     private final PgIndexType createIndexMethod;
@@ -60,12 +64,24 @@ public class CustomPgVectorStore extends PgVectorStore implements InitializingBe
     @Override
     public void add(List<Document> documents) {
         String sql = String.format("INSERT INTO %s (id, content, metadata, embedding) VALUES (?, ?, ?::json, ?)", tableName);
+        logger.info("Executing batch insert into table: {}", tableName);
 
         jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 Document document = documents.get(i);
                 List<Double> embedding = embeddingModel.embed(document.getContent());
+
+                // 로깅 추가
+                logger.info("Document {}: Content '{}', Embedding dimension: {}, Expected dimension: {}",
+                        i, document.getContent(), embedding.size(), dimensions);
+                logger.info("Document {}: Content '{}', Embedding dimension: {}", i, document.getContent(), embedding.size());
+
+                if (embedding.size() != dimensions) {
+                    logger.error("Embedding dimension mismatch. Expected: {}, Actual: {}", dimensions, embedding.size());
+                    throw new IllegalStateException("Embedding dimension mismatch");
+                }
+
                 ps.setObject(1, UUID.randomUUID());
                 ps.setString(2, document.getContent());
                 try {
@@ -81,6 +97,8 @@ public class CustomPgVectorStore extends PgVectorStore implements InitializingBe
                 return documents.size();
             }
         });
+
+        logger.info("Successfully inserted {} documents into table: {}", documents.size(), tableName);
     }
 
     @Override
