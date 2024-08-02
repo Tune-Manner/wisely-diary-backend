@@ -26,8 +26,9 @@ public class RAGController {
         try {
             String content = new String(file.getBytes(), StandardCharsets.UTF_8);
             String fileName = file.getOriginalFilename();
-            vectorStoreService.addDocumentFromText(content, fileName, storeType);
-            return ResponseEntity.ok("Document uploaded and split successfully");
+
+            String result = vectorStoreService.addDocumentFromText(content, fileName, storeType);
+            return ResponseEntity.ok(result);
         } catch (IOException e) {
             throw new DocumentUploadException(ExceptionCode.DOCUMENT_UPLOAD_ERROR);
         }

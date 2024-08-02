@@ -1,6 +1,7 @@
 package tuneandmanner.wiselydiarybackend.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.MetadataMode;
@@ -17,6 +18,9 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.jdbc.core.JdbcTemplate;
 import tuneandmanner.wiselydiarybackend.common.vectorstore.CustomPgVectorStore;
 
+import java.util.List;
+import java.util.Map;
+
 @Configuration
 public class PGVectorStoreConfig {
     private static final Logger logger = LoggerFactory.getLogger(PGVectorStoreConfig.class);
@@ -27,6 +31,29 @@ public class PGVectorStoreConfig {
     @Autowired
     @Qualifier("openAiEmbeddingModel")
     private EmbeddingModel embeddingModel;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @PostConstruct
+    public void initializePgVector() {
+        logger.info("Attempting to initialize pgvector extension");
+        try {
+            jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector");
+            logger.info("pgvector extension initialized successfully");
+
+            // 확장 설치 확인
+            List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM pg_extension WHERE extname = 'vector'");
+            if (!result.isEmpty()) {
+                logger.info("Confirmed pgvector extension is installed: {}", result);
+            } else {
+                logger.warn("pgvector extension not found in pg_extension");
+            }
+        } catch (Exception e) {
+            logger.error("Failed to initialize pgvector extension", e);
+            throw new RuntimeException("Application startup failed due to pgvector initialization error", e);
+        }
+    }
 
     @Bean
     public PgVectorStore pgVectorStoreSummary(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
@@ -56,8 +83,8 @@ public class PGVectorStoreConfig {
                 embeddingDimension,
                 PgVectorStore.PgDistanceType.COSINE_DISTANCE,
                 false,  // removeExistingVectorStoreTable
-                PgVectorStore.PgIndexType.HNSW,  // createIndexMethod
-                false,  // initializeSchema
+                PgVectorStore.PgIndexType.HNSW,  // HNSW 인덱스 사용
+                true,  // initializeSchema
                 tableName,
                 objectMapper
         );
