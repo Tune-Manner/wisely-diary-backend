@@ -26,9 +26,10 @@ public enum ExceptionCode {
     ACCESS_DENIED(403, "허가 되지 않은 요청입니다."),
 
     // 404 Error
+    NOT_FOUND_SUMMARY_CODE(404, "유효한 요약 코드가 아닙니다."),
     NOT_FOUND_TASK_ID(404, "유효한 음악 코드가 아닙니다."),
-    NOT_FOUND_CLIP_URL(404, "클립 URL을 찾을 수 없습니다."),
     NOT_FOUND_LETTER_CODE(404, "유효한 편지 코드가 아닙니다."),
+    NOT_FOUND_CLIP_URL(404, "클립 URL을 찾을 수 없습니다."),
 
     // 500 Error
     SERVER_ERROR(500, "서버 에러가 발생했습니다."),
