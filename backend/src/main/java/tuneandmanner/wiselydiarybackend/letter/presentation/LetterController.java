@@ -10,6 +10,8 @@ import tuneandmanner.wiselydiarybackend.letter.dto.response.CreateLetterResponse
 import tuneandmanner.wiselydiarybackend.letter.service.LetterService;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -19,12 +21,24 @@ public class LetterController {
 
     private final LetterService letterService;
 
-    @PostMapping("/rag")
-    public ResponseEntity<CreateLetterResponse> createLetter(@RequestBody @Valid CreateLetterRequest request) {
-        CreateLetterResponse response = letterService.createLetter(request);
+    @PostMapping("/{diarySummaryCode}")
+    public ResponseEntity<Map<String, Object>> createLetter(@RequestBody @Valid CreateLetterRequest request) {
+        CreateLetterResponse response = letterService.createLetter(request.getDiarySummaryCode());
+
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("letterCode", response.getLetterCode());
+        responseMap.put("diarySummaryCode", response.getDiarySummaryCode());
+        responseMap.put("letterContents", response.getLetterContents());
+        responseMap.put("createdAt", response.getCreatedAt().toString());  // 문자열로 변환
+
         return ResponseEntity.created(URI.create("/api/letter/" + response.getLetterCode()))
-                .body(response);
+                .body(responseMap);
     }
+//    public ResponseEntity<CreateLetterResponse> createLetter(@RequestBody @Valid CreateLetterRequest request) {
+//        CreateLetterResponse response = letterService.createLetter(request.getDiarySummaryCode());
+//        return ResponseEntity.created(URI.create("/api/letter/" + response.getLetterCode()))
+//                .body(response);
+//    }
 
     @GetMapping("/{letterCode}")
     public ResponseEntity<CreateLetterResponse> getLetter(
