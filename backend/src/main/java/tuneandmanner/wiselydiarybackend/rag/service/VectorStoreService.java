@@ -53,7 +53,7 @@ public class VectorStoreService {
     public List<String> searchSimilarDocuments(String query, String storeType) {
         logger.info("Searching similar documents for query: '{}' in store type: {}", query, storeType);
         PgVectorStore store = getStore(storeType);
-        SearchRequest searchRequest = SearchRequest.query(query).withTopK(5);
+        SearchRequest searchRequest = SearchRequest.query(query).withTopK(1);
         List<Document> results = store.similaritySearch(searchRequest);
         logger.debug("Found {} similar documents", results.size());
         List<String> contents = results.stream()

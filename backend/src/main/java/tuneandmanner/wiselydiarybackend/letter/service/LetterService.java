@@ -54,27 +54,43 @@ public class LetterService {
     private String generateLetterContents(String diarySummaryContents) {
         log.info("Generating letter for diary summary: {}", diarySummaryContents);
 
+        List<String> relevantQuotes = getRelevantQuotes(diarySummaryContents);
+        StringBuilder quotesContent = new StringBuilder();
+        if (!relevantQuotes.isEmpty()) {
+            quotesContent.append("오늘과 어울리는 명언\n");
+            for (String quote : relevantQuotes) {
+                quotesContent.append("- ").append(quote).append("\n");
+            }
+            quotesContent.append("\n");
+        }
+
+        // 명언을 포함한 query 생성
         String query = """
                 당신은 일기를 작성한 사람의 다정한 심리상담 친구입니다.
                 일기 내용을 참고해서 친구처럼 편지를 한국어로 작성해주세요.
-                만약 일기 내용에 감정적인 내용을 찾을 수 없다면, 일상을 바탕으로 공감을 해주세요.
+                만약 일기 내용에 감정적인 내용을 찾을 수 없다면, 일상을 바탕으로 공감을 해주세요. 이 내용은 편지에 포함하지 않아도 됩니다.
                 일기 내용을 바탕으로 위로와 격려의 편지를 한국어로 작성해주세요.
                 반말을 사용하면서도, 성숙하고 따듯한 말을 전해주세요.
+                """ + quotesContent + """
+                또한 이 명언을 참고해서 위에 제시된 명언을 자연스럽게 활용하여 현재에 대한 조언을 해주세요. 편지 내용에 명언을 포함할 
+                때에는 '위 명언처럼' 등과 같이 자연스럽게 작성되도록 해주세요.
                 """;
 
         Map<String, String> result = ragService.generateResponse(query, diarySummaryContents, "letter");
         String letterContent = result.get("response");
 
-        List<String> relevantQuotes = getRelevantQuotes(diarySummaryContents);
         if (!relevantQuotes.isEmpty()) {
-            letterContent += "\n\n오늘과 어울리는 명언\n";
+            StringBuilder finalContent = new StringBuilder("오늘의 명언:\n");
             for (String quote : relevantQuotes) {
-                letterContent += "- " + quote + "\n";
+                finalContent.append("- ").append(quote).append("\n");
             }
+            finalContent.append("\n").append(letterContent);
+            letterContent = finalContent.toString();
         }
 
         return letterContent;
     }
+
 
     // 명언 추출
     private List<String> getRelevantQuotes(String diarySummaryContents) {
