@@ -9,6 +9,7 @@ import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.DiarySummary;
 import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.CartoonRepository;
 import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.DiarySummaryRepository;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.request.CreateCartoonRequest;
+import tuneandmanner.wiselydiarybackend.cartoon.dto.request.SaveCartoonRequest;
 
 import java.time.LocalDateTime;
 
@@ -36,18 +37,23 @@ public class CartoonService {
             // Use the generated prompt to create an image with DalleApiService
             String cartoonPath = dalleApiService.generateCartoonPrompt(generatedPrompt);
 
-            Cartoon cartoon = Cartoon.builder()
-                    .cartoonPath(cartoonPath)
-                    .diarySummaryCode(request.getDiarySummaryCode())
-                    .createdAt(LocalDateTime.now())
-                    .build();
-
-            cartoonRepository.save(cartoon);
             return cartoonPath;
 
         } catch (Exception e) {
             log.error("Error creating cartoon", e);
             throw new RuntimeException("Failed to create cartoon", e);
         }
+    }
+
+    @Transactional
+    public Integer saveCartoon(SaveCartoonRequest request){
+        log.info("CartoonService.Save cartoon");
+        Cartoon cartoon = Cartoon.builder()
+                .cartoonPath(request.getCartoonPath())
+                .diarySummaryCode(request.getDiarySummaryCode())
+                .createdAt(LocalDateTime.now())
+                .build();
+        Cartoon savedCartoon = cartoonRepository.save(cartoon);
+        return savedCartoon.getCartoonCode();
     }
 }

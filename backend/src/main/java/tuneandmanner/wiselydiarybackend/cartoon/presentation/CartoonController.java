@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.request.CreateCartoonRequest;
+import tuneandmanner.wiselydiarybackend.cartoon.dto.request.SaveCartoonRequest;
 import tuneandmanner.wiselydiarybackend.cartoon.service.CartoonService;
 
 @Slf4j
@@ -23,5 +24,13 @@ public class CartoonController {
 
         String cartoonUrl = cartoonService.createCartoonPrompt(request);
         return ResponseEntity.ok(cartoonUrl);
+    }
+
+    //만화 저장
+    @PostMapping("/save")
+    public ResponseEntity<Integer> saveCartoon(@RequestBody SaveCartoonRequest request){
+        log.info("CartoonController.saveCartoon");
+        Integer cartoonCode = cartoonService.saveCartoon(request);
+        return ResponseEntity.ok(cartoonCode);
     }
 }
