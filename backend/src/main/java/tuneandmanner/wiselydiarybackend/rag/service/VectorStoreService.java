@@ -145,20 +145,27 @@ public class VectorStoreService {
      * @throws IllegalArgumentException 유효하지 않은 저장소 유형이 주어졌을 때 발생
      */
     private PgVectorStore getStore(String storeType) {
-        logger.debug("Getting store for type: {}", storeType);
-        PgVectorStore store = switch (storeType) {
+        if (storeType == null) {
+            logger.error("Null store type received");
+            throw new IllegalArgumentException("Store type cannot be null");
+        }
+
+        String trimmedStoreType = storeType.trim().toLowerCase();
+        logger.debug("Getting store for type: '{}'", trimmedStoreType);
+
+        PgVectorStore store = switch (trimmedStoreType) {
             case "summary" -> pgVectorStoreSummary;
             case "letter" -> pgVectorStoreLetter;
             case "music" -> pgVectorStoreMusic;
             default -> {
-                logger.error("Invalid store type requested: {}", storeType);
-                throw new IllegalArgumentException("Invalid store type: " + storeType);
+                logger.error("Invalid store type requested: '{}'", trimmedStoreType);
+                throw new IllegalArgumentException("Invalid store type: " + trimmedStoreType);
             }
         };
-        logger.debug("Retrieved store for type: {}", storeType);
+
+        logger.debug("Retrieved store for type: '{}'", trimmedStoreType);
         return store;
     }
-
     public boolean isDuplicateOrSimilarDocument(String content, String storeType) {
         logger.debug("Checking for duplicate or similar document. Content length: {}, StoreType: {}", content.length(), storeType);
 
@@ -178,10 +185,30 @@ public class VectorStoreService {
                 return true;
             }
 
-            List<Double> embedding = customStore.getEmbeddingModel().embed(content);
-            logger.debug("Generated embedding for content. Embedding size: {}", embedding.size());
+            List<List<Double>> embeddings = new ArrayList<>();
+            List<String> chunks = splitContentIntoChunks(content);
 
-            boolean isSimilar = customStore.isDocumentSimilar(embedding);
+            for (String chunk : chunks) {
+                try {
+                    List<Double> embedding = customStore.getEmbeddingModel().embed(chunk);
+                    embeddings.add(embedding);
+                } catch (Exception e) {
+                    logger.warn("Error embedding chunk: {}", e.getMessage());
+                    // 오류가 발생한 청크는 건너뜁니다.
+                }
+            }
+
+            logger.debug("Generated embeddings for {} chunks", embeddings.size());
+
+            if (embeddings.isEmpty()) {
+                logger.warn("No valid embeddings generated for content");
+                return false;
+            }
+
+            // 여러 임베딩의 평균을 계산합니다.
+            List<Double> averageEmbedding = calculateAverageEmbedding(embeddings);
+
+            boolean isSimilar = customStore.isDocumentSimilar(averageEmbedding);
             logger.debug("Document similarity check result: {}", isSimilar);
 
             return isSimilar;
@@ -190,6 +217,36 @@ public class VectorStoreService {
         logger.warn("Store is not an instance of CustomPgVectorStore. Store type: {}", store.getClass().getName());
         return false;
     }
+
+    private List<String> splitContentIntoChunks(String content) {
+        // 이 메소드는 컨텐츠를 적절한 크기의 청크로 나눕니다.
+        // 예를 들어, 단어 수나 문자 수를 기준으로 나눌 수 있습니다.
+        // 여기서는 간단한 예시로 1000자 단위로 나누었습니다.
+        List<String> chunks = new ArrayList<>();
+        int chunkSize = 1000;
+        for (int i = 0; i < content.length(); i += chunkSize) {
+            chunks.add(content.substring(i, Math.min(content.length(), i + chunkSize)));
+        }
+        return chunks;
+    }
+
+    private List<Double> calculateAverageEmbedding(List<List<Double>> embeddings) {
+        int dimensions = embeddings.get(0).size();
+        List<Double> average = new ArrayList<>(Collections.nCopies(dimensions, 0.0));
+
+        for (List<Double> embedding : embeddings) {
+            for (int i = 0; i < dimensions; i++) {
+                average.set(i, average.get(i) + embedding.get(i));
+            }
+        }
+
+        for (int i = 0; i < dimensions; i++) {
+            average.set(i, average.get(i) / embeddings.size());
+        }
+
+        return average;
+    }
+
 
     private String calculateContentHash(String content) {
         try {
