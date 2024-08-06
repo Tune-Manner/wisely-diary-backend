@@ -51,6 +51,7 @@ public class CartoonService {
             log.error("Failed to download image", e);
             throw new RuntimeException("Failed to download image", e);
         }
+
     }
     @Transactional
     public String createCartoonPrompt(CreateCartoonRequest request) {
