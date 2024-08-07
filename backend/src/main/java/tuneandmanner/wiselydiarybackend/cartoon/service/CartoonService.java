@@ -11,6 +11,7 @@ import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.CartoonReposit
 import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.DiarySummaryRepository;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.request.CreateCartoonRequest;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.request.SaveCartoonRequest;
+import tuneandmanner.wiselydiarybackend.cartoon.dto.response.InquiryCartoonResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,8 +20,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -90,5 +95,14 @@ public class CartoonService {
 
         Cartoon savedCartoon = cartoonRepository.save(cartoon);
         return savedCartoon.getCartoonCode();
+    }
+
+    public List<InquiryCartoonResponse> findCartoon(LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+        List<Cartoon> cartoons = cartoonRepository.findByCreatedAtBetween(startOfDay,endOfDay);
+        return cartoons.stream()
+                .map(cartoon -> new InquiryCartoonResponse(cartoon.getCartoonCode(),cartoon.getCartoonPath(),cartoon.getCreatedAt(),cartoon.getDiarySummaryCode()))
+                .collect(Collectors.toList());
     }
 }
