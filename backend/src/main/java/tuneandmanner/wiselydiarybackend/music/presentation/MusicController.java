@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tuneandmanner.wiselydiarybackend.music.dto.reponse.CreateMusicResponse;
-import tuneandmanner.wiselydiarybackend.music.dto.reponse.MusicPlaybackResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.CreateMusicResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.MusicPlaybackResponse;
 import tuneandmanner.wiselydiarybackend.music.dto.request.CreateMusicRequest;
 import tuneandmanner.wiselydiarybackend.music.service.MusicService;
 

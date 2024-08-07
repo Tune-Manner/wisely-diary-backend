@@ -12,9 +12,9 @@ import tuneandmanner.wiselydiarybackend.common.exception.NotFoundException;
 import tuneandmanner.wiselydiarybackend.common.exception.ServerInternalException;
 import tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode;
 import tuneandmanner.wiselydiarybackend.common.util.TokenUtils;
-import tuneandmanner.wiselydiarybackend.music.dto.reponse.CreateMusicResponse;
-import tuneandmanner.wiselydiarybackend.music.dto.reponse.SunoApiResponse;
-import tuneandmanner.wiselydiarybackend.music.dto.reponse.SunoClipResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.CreateMusicResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.SunoApiResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.SunoClipResponse;
 import tuneandmanner.wiselydiarybackend.music.dto.request.SunoApiRequest;
 
 @Slf4j
