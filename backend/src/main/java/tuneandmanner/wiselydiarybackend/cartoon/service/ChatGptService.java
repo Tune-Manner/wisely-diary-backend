@@ -1,16 +1,20 @@
 package tuneandmanner.wiselydiarybackend.cartoon.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import tuneandmanner.wiselydiarybackend.auth.config.OpenAiConfig;
-import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.DiarySummary;
-import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.DiarySummaryRepository;
-
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import tuneandmanner.wiselydiarybackend.auth.config.OpenAiConfig;
 
 @Slf4j
 @RequiredArgsConstructor

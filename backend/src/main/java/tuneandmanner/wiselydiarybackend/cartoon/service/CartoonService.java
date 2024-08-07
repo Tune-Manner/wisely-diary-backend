@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.Cartoon;
-import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.DiarySummary;
+import tuneandmanner.wiselydiarybackend.diarysummary.domain.DiarySummary;
 import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.CartoonRepository;
-import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.DiarySummaryRepository;
+import tuneandmanner.wiselydiarybackend.diarysummary.repository.DiarySummaryRepository;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.request.CreateCartoonRequest;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.request.SaveCartoonRequest;
 
@@ -35,9 +35,6 @@ public class CartoonService {
     @Value("${image.storage.path}")  // YML에서 설정한 경로를 주입
     private String imagePath;
 
-
-
-
     private String downloadImage(String imageUrl) {
         try (InputStream in = new URL(imageUrl).openStream()) {
             String fileName = UUID.randomUUID().toString() + ".png";  // 고유 파일명 생성
@@ -51,7 +48,6 @@ public class CartoonService {
             log.error("Failed to download image", e);
             throw new RuntimeException("Failed to download image", e);
         }
-
     }
     @Transactional
     public String createCartoonPrompt(CreateCartoonRequest request) {
@@ -84,7 +80,7 @@ public class CartoonService {
 
         Cartoon cartoon = Cartoon.builder()
                 .cartoonPath(localImagePath)  // 로컬 경로를 저장
-                .diarySummaryCode(request.getDiarySummaryCode())
+                .diarySummaryCode(Math.toIntExact(request.getDiarySummaryCode()))
                 .createdAt(LocalDateTime.now())
                 .build();
 
