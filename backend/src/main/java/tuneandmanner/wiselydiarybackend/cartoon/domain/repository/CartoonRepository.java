@@ -14,10 +14,10 @@ public interface CartoonRepository extends JpaRepository<Cartoon, Integer> {
             "JOIN DiarySummary ds ON c.diarySummary.diarySummaryCode = ds.diarySummaryCode " +
             "JOIN Diary d ON ds.diary.diaryCode = d.diaryCode " +
             "WHERE c.createdAt BETWEEN :startOfDay AND :endOfDay " +
-            "AND d.member.memberCode = :memberCode")
-    List<Cartoon> findByCreatedAtBetweenAndMemberCode(
+            "AND d.member.memberId = :memberId")
+    List<Cartoon> findByCreatedAtBetweenAndMemberId(
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay,
-            @Param("memberCode") Long memberCode
+            @Param("memberId") String memberId
     );
 }

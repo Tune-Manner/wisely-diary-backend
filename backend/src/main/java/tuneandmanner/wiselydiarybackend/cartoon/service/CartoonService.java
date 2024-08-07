@@ -99,11 +99,11 @@ public class CartoonService {
         return savedCartoon.getCartoonCode();
     }
 
-    public List<InquiryCartoonResponse> findCartoon(LocalDate date, Long memberCode) {
+    public List<InquiryCartoonResponse> findCartoon(LocalDate date, String memberId) {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
         System.out.println("1");
-        List<Cartoon> cartoons = cartoonRepository.findByCreatedAtBetweenAndMemberCode(startOfDay, endOfDay, memberCode);
+        List<Cartoon> cartoons = cartoonRepository.findByCreatedAtBetweenAndMemberId(startOfDay, endOfDay, memberId);
         System.out.println("2");
         return cartoons.stream()
                 .map(cartoon -> new InquiryCartoonResponse(
