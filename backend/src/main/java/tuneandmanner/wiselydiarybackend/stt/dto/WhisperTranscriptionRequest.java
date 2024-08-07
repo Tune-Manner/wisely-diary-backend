@@ -1,11 +1,15 @@
 package tuneandmanner.wiselydiarybackend.stt.dto;
 
-import lombok.Builder;
-import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
-@Data
-@Builder
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter @Setter
+@NoArgsConstructor
+@ToString
 public class WhisperTranscriptionRequest {
 	private String model;
 	private MultipartFile file;
