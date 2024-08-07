@@ -42,8 +42,12 @@ public class CartoonController {
 
     //오늘 생성 된 만화 조회
     @GetMapping("/inquiry")
-    public ResponseEntity<List<InquiryCartoonResponse>> getCartoon(@RequestParam LocalDate date){
-        List<InquiryCartoonResponse> cartoons = cartoonService.findCartoon(date);
+    public ResponseEntity<List<InquiryCartoonResponse>> getCartoon(
+            @RequestParam LocalDate date,
+            @RequestParam Long memberCode
+    ){
+        List<InquiryCartoonResponse> cartoons = cartoonService.findCartoon(date,memberCode);
+        System.out.println("4");
         if(cartoons.isEmpty()){
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }else{

@@ -1,6 +1,8 @@
 package tuneandmanner.wiselydiarybackend.cartoon.domain.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.Cartoon;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.response.InquiryCartoonResponse;
 
@@ -8,8 +10,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CartoonRepository extends JpaRepository<Cartoon, Integer> {
-    // 필요한 쿼리 메서드 추가
-
-    /*날짜에 해당하는 만화 조회*/
-    List<Cartoon> findByCreatedAtBetween(LocalDateTime startOfDay,LocalDateTime endOfDay);
+    @Query("SELECT c FROM Cartoon c " +
+            "JOIN DiarySummary ds ON c.diarySummary.diarySummaryCode = ds.diarySummaryCode " +
+            "JOIN Diary d ON ds.diary.diaryCode = d.diaryCode " +
+            "WHERE c.createdAt BETWEEN :startOfDay AND :endOfDay " +
+            "AND d.member.memberCode = :memberCode")
+    List<Cartoon> findByCreatedAtBetweenAndMemberCode(
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay,
+            @Param("memberCode") Long memberCode
+    );
 }

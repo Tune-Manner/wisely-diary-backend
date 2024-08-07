@@ -84,12 +84,14 @@ public class CartoonService {
     public Integer saveCartoon(SaveCartoonRequest request) {
         log.info("CartoonService.Save cartoon");
 
-        // 이미지 URL을 로컬에 저장
         String localImagePath = downloadImage(request.getCartoonPath());
 
+        DiarySummary diarySummary = diarySummaryRepository.findById(request.getDiarySummaryCode())
+                .orElseThrow(() -> new RuntimeException("Diary summary not found"));
+
         Cartoon cartoon = Cartoon.builder()
-                .cartoonPath(localImagePath)  // 로컬 경로를 저장
-                .diarySummaryCode(request.getDiarySummaryCode())
+                .cartoonPath(localImagePath)
+                .diarySummary(diarySummary)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -97,12 +99,18 @@ public class CartoonService {
         return savedCartoon.getCartoonCode();
     }
 
-    public List<InquiryCartoonResponse> findCartoon(LocalDate date) {
+    public List<InquiryCartoonResponse> findCartoon(LocalDate date, Long memberCode) {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
-        List<Cartoon> cartoons = cartoonRepository.findByCreatedAtBetween(startOfDay,endOfDay);
+        System.out.println("1");
+        List<Cartoon> cartoons = cartoonRepository.findByCreatedAtBetweenAndMemberCode(startOfDay, endOfDay, memberCode);
+        System.out.println("2");
         return cartoons.stream()
-                .map(cartoon -> new InquiryCartoonResponse(cartoon.getCartoonCode(),cartoon.getCartoonPath(),cartoon.getCreatedAt(),cartoon.getDiarySummaryCode()))
+                .map(cartoon -> new InquiryCartoonResponse(
+                        cartoon.getCartoonCode(),
+                        cartoon.getCartoonPath(),
+                        cartoon.getCreatedAt(),
+                        cartoon.getDiarySummary().getDiarySummaryCode()))
                 .collect(Collectors.toList());
     }
 }

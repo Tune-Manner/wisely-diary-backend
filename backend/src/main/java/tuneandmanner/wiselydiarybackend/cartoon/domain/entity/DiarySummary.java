@@ -16,5 +16,7 @@ public class DiarySummary {
     @Column(columnDefinition = "TEXT")
     private String diarySummaryContents;
 
-    private Integer diaryCode;
+    @ManyToOne
+    @JoinColumn(name="diary_code")
+    private Diary diary;
 }

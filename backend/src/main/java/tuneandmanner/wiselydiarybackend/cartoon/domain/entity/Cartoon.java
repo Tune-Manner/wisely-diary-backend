@@ -20,7 +20,9 @@ public class Cartoon {
     private Integer cartoonCode;
     private String cartoonPath;
     private LocalDateTime createdAt;
-    private Integer diarySummaryCode;
+    @ManyToOne
+    @JoinColumn(name="diary_summary_code")
+    private DiarySummary diarySummary;
 
     // 생성자, 빌더 등 필요한 메서드 추가
 }
