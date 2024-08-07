@@ -20,6 +20,7 @@ repositories {
 
 ext {
     set('springAiVersion', "1.0.0-M1")
+    springCloudVersion = "2023.0.3"
 }
 
 dependencies {
@@ -32,6 +33,7 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'org.springframework.shell:spring-shell-starter'
     compileOnly 'org.projectlombok:lombok'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
@@ -40,12 +42,14 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'commons-io:commons-io:2.11.0'
     implementation 'org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter'
 }
 
 dependencyManagement {
     imports {
         mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
         mavenBom "org.springframework.shell:spring-shell-dependencies:3.3.1"
     }
 }
