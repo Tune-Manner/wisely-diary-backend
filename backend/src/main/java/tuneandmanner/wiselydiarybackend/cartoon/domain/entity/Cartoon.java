@@ -3,6 +3,7 @@ package tuneandmanner.wiselydiarybackend.cartoon.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import tuneandmanner.wiselydiarybackend.diarysummary.domain.DiarySummary;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +18,7 @@ public class Cartoon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer cartoonCode;
+    private Long cartoonCode;
     private String cartoonPath;
     private LocalDateTime createdAt;
     @ManyToOne

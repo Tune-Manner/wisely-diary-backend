@@ -10,6 +10,6 @@ import tuneandmanner.wiselydiarybackend.diarysummary.domain.DiarySummary;
 
 @Repository
 public interface DiarySummaryRepository extends JpaRepository<DiarySummary, Long> {
-	DiarySummary findByDiaryCode(Long diaryCode);
+//	DiarySummary findByDiaryCode(Long diaryCode);
 	Optional<DiarySummary> findByDiarySummaryCode(@Param("diarySummaryCode") Long diarySummaryCode);
 }

@@ -34,9 +34,9 @@ public class CartoonController {
 
     //만화 저장
     @PostMapping("/save")
-    public ResponseEntity<Integer> saveCartoon(@RequestBody SaveCartoonRequest request){
+    public ResponseEntity<Long> saveCartoon(@RequestBody SaveCartoonRequest request){
         log.info("CartoonController.saveCartoon");
-        Integer cartoonCode = cartoonService.saveCartoon(request);
+        Long cartoonCode = cartoonService.saveCartoon(request);
         return ResponseEntity.ok(cartoonCode);
     }
 

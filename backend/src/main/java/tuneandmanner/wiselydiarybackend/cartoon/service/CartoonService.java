@@ -6,12 +6,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.Cartoon;
-import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.DiarySummary;
 import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.CartoonRepository;
-import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.DiarySummaryRepository;
+
 import tuneandmanner.wiselydiarybackend.cartoon.dto.request.CreateCartoonRequest;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.request.SaveCartoonRequest;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.response.InquiryCartoonResponse;
+
+import tuneandmanner.wiselydiarybackend.diarysummary.domain.DiarySummary;
+import tuneandmanner.wiselydiarybackend.diarysummary.repository.DiarySummaryRepository;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,7 +84,7 @@ public class CartoonService {
     }
 
     @Transactional
-    public Integer saveCartoon(SaveCartoonRequest request) {
+    public Long saveCartoon(SaveCartoonRequest request) {
         log.info("CartoonService.Save cartoon");
 
         String localImagePath = downloadImage(request.getCartoonPath());
