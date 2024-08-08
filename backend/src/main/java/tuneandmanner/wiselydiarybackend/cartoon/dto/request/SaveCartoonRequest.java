@@ -11,5 +11,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SaveCartoonRequest {
     private String cartoonPath;
-    private Integer diarySummaryCode;
+    private Long diarySummaryCode;
 }

@@ -1,4 +1,4 @@
-package tuneandmanner.wiselydiarybackend.music.dto.reponse;
+package tuneandmanner.wiselydiarybackend.music.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
