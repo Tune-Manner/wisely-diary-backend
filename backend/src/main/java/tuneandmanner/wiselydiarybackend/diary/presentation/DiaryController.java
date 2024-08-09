@@ -24,9 +24,9 @@ public class DiaryController {
      * @param diaryCode 요약할 일기의 코드
      * @return 생성된 요약 내용
      */
-//    @GetMapping("/rag/summarize/{diaryCode}")
-//    public ResponseEntity<String> summarizeDiary(@PathVariable Long diaryCode) {
-//        String summary = diaryService.summarizeDiary(diaryCode);
-//        return ResponseEntity.ok(summary);
-//    }
+    @GetMapping("/rag/summarize/{diaryCode}")
+    public ResponseEntity<String> summarizeDiary(@PathVariable Long diaryCode) {
+        String summary = diaryService.summarizeDiary(diaryCode);
+        return ResponseEntity.ok(summary);
+    }
 }

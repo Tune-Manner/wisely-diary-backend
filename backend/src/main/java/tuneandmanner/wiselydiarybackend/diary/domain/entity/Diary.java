@@ -2,14 +2,10 @@ package tuneandmanner.wiselydiarybackend.diary.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-<<<<<<< HEAD
-=======
-import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.Member;
 
-
->>>>>>> 532c25d9a65f96b956b9ebec34d1984b36bcb1d4
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,15 +27,8 @@ public class Diary {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-
-<<<<<<< HEAD
-    @Column(name = "member_code", nullable = false)
+    @Column(name = "member_code")
     private Long memberCode;
-=======
-    @ManyToOne
-    @JoinColumn(name="member_code")
-    private Member member;
->>>>>>> 532c25d9a65f96b956b9ebec34d1984b36bcb1d4
 
     @Column(name = "emotion_code", nullable = false)
     private Integer emotionCode;
@@ -47,22 +36,22 @@ public class Diary {
     @Column(name = "diary_status", length = 20)
     private String diaryStatus = "EXIST";
 
-//    @Builder
-//    public Diary(
-//            Long diaryCode,
-//            String diaryContents,
-//            LocalDateTime createdAt,
-//            LocalDateTime updatedAt,
-//            Member member,
-//            Integer emotionCode,
-//            String diaryStatus
-//    ) {
-//        this.diaryCode = diaryCode;
-//        this.diaryContents = diaryContents;
-//        this.createdAt = createdAt;
-//        this.updatedAt = updatedAt;
-//        this.memberCode = memberCode;
-//        this.emotionCode = emotionCode;
-//        this.diaryStatus = diaryStatus;
-//    }
+    @Builder
+    public Diary(
+            Long diaryCode,
+            String diaryContents,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt,
+            Long memberCode,
+            Integer emotionCode,
+            String diaryStatus
+    ) {
+        this.diaryCode = diaryCode;
+        this.diaryContents = diaryContents;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.memberCode = memberCode;
+        this.emotionCode = emotionCode;
+        this.diaryStatus = diaryStatus;
+    }
 }
