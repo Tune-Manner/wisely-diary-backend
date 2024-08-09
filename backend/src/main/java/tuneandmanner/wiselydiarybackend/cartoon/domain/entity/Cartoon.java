@@ -17,12 +17,14 @@ public class Cartoon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer cartoonCode;
+    @Column(name = "cartoon_code")
+    private Long cartoonCode;
+    @Column(name = "cartoon_path", nullable = false)
     private String cartoonPath;
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-    @ManyToOne
-    @JoinColumn(name="diary_summary_code")
-    private DiarySummary diarySummary;
+    @Column(name = "diary_summary_code", nullable = false)
+    private Long diarySummaryCode;
 
     // 생성자, 빌더 등 필요한 메서드 추가
 }

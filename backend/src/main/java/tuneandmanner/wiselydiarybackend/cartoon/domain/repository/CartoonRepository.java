@@ -8,16 +8,8 @@ import tuneandmanner.wiselydiarybackend.cartoon.dto.response.InquiryCartoonRespo
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-public interface CartoonRepository extends JpaRepository<Cartoon, Integer> {
-    @Query("SELECT c FROM Cartoon c " +
-            "JOIN DiarySummary ds ON c.diarySummary.diarySummaryCode = ds.diarySummaryCode " +
-            "JOIN Diary d ON ds.diary.diaryCode = d.diaryCode " +
-            "WHERE c.createdAt BETWEEN :startOfDay AND :endOfDay " +
-            "AND d.member.memberId = :memberId")
-    List<Cartoon> findByCreatedAtBetweenAndMemberId(
-            @Param("startOfDay") LocalDateTime startOfDay,
-            @Param("endOfDay") LocalDateTime endOfDay,
-            @Param("memberId") String memberId
-    );
+public interface CartoonRepository extends JpaRepository<Cartoon, Long> {
+    List<Cartoon> findByDiarySummaryCodeInAndCreatedAtBetween(List<Long> diarySummaryCodes, LocalDateTime start, LocalDateTime end);
 }

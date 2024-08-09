@@ -30,8 +30,8 @@ public class DiarySummary {
 
 	public DiarySummary updateContents(String newContents) {
 		return DiarySummary.builder()
-			.diarySummaryContents(newContents)
-			.diaryCode(this.diaryCode)
-			.build();
+				.diarySummaryContents(newContents)
+				.diaryCode(this.diaryCode)
+				.build();
 	}
 }

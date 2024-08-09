@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InquiryCartoonResponse {
-    private Integer cartoonCode;
+    private Long cartoonCode;
     private String cartoonPath;
     private LocalDateTime createdAt;
-    private Integer diarySummaryCode;
+    private Long diarySummaryCode;
 }

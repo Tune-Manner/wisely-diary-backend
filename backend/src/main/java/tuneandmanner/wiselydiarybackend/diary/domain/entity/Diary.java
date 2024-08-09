@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -27,7 +26,8 @@ public class Diary {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "member_code")
+
+    @Column(name = "member_code", nullable = false)
     private Long memberCode;
 
     @Column(name = "emotion_code", nullable = false)
