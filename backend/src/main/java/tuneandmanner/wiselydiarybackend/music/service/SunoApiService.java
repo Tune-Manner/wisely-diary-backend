@@ -37,7 +37,7 @@ public class SunoApiService {
         log.info("SunoApiRequest: {}", sunoRequest);
 
         SunoApiResponse response = webClient.post()
-                .uri("/api/v1/suno/create")
+                .uri("/api/v2/suno/v3.5/custom/create-lyrics-song")
                 .header("Authorization", token)
                 .bodyValue(sunoRequest)
                 .retrieve()
