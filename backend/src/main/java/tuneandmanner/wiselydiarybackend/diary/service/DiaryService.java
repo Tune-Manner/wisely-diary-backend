@@ -59,49 +59,49 @@ public class DiaryService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Transactional
-    public String summarizeDiary(Long diaryCode) {
-        logger.info("Summarizing diary with code: {}", diaryCode);
-
-        try {
-            logger.debug("Fetching diary from repository");
-            Diary diary = diaryRepository.findById(diaryCode)
-                    .orElseThrow(() -> {
-                        logger.error("Diary not found with code: {}", diaryCode);
-                        return new RuntimeException("일기를 찾을 수 없습니다.");
-                    });
-
-            logger.debug("Generating summary for diary");
-            String summary = generateSummary(diary);
-            logger.debug("Summary generated: {}", summary);
-
-            logger.debug("Checking for existing summary");
-            DiarySummary existingSummary = diarySummaryRepository.findByDiaryCode(diaryCode);
-            if (existingSummary != null) {
-                logger.debug("Updating existing summary");
-                DiarySummary updatedSummary = existingSummary.updateContents(summary);
-                diarySummaryRepository.save(updatedSummary);
-            } else {
-                logger.debug("Creating new summary");
-                DiarySummary newSummary = DiarySummary.builder()
-                        .diarySummaryContents(summary)
-                        .diaryCode(diaryCode)
-                        .build();
-                diarySummaryRepository.save(newSummary);
-            }
-
-            logger.info("Diary summary process completed successfully for diary code: {}", diaryCode);
-
-            entityManager.flush();
-            entityManager.clear();
-
-            return summary;
-        } catch (Exception e) {
-            logger.error("Error occurred while summarizing diary with code: {}", diaryCode, e);
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            throw e;
-        }
-    }
+//    @Transactional
+//    public String summarizeDiary(Long diaryCode) {
+//        logger.info("Summarizing diary with code: {}", diaryCode);
+//
+//        try {
+//            logger.debug("Fetching diary from repository");
+//            Diary diary = diaryRepository.findById(diaryCode)
+//                    .orElseThrow(() -> {
+//                        logger.error("Diary not found with code: {}", diaryCode);
+//                        return new RuntimeException("일기를 찾을 수 없습니다.");
+//                    });
+//
+//            logger.debug("Generating summary for diary");
+//            String summary = generateSummary(diary);
+//            logger.debug("Summary generated: {}", summary);
+//
+//            logger.debug("Checking for existing summary");
+//            DiarySummary existingSummary = diarySummaryRepository.findByDiaryCode(diaryCode);
+//            if (existingSummary != null) {
+//                logger.debug("Updating existing summary");
+//                DiarySummary updatedSummary = existingSummary.updateContents(summary);
+//                diarySummaryRepository.save(updatedSummary);
+//            } else {
+//                logger.debug("Creating new summary");
+//                DiarySummary newSummary = DiarySummary.builder()
+//                        .diarySummaryContents(summary)
+//                        .diaryCode(diaryCode)
+//                        .build();
+//                diarySummaryRepository.save(newSummary);
+//            }
+//
+//            logger.info("Diary summary process completed successfully for diary code: {}", diaryCode);
+//
+//            entityManager.flush();
+//            entityManager.clear();
+//
+//            return summary;
+//        } catch (Exception e) {
+//            logger.error("Error occurred while summarizing diary with code: {}", diaryCode, e);
+//            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+//            throw e;
+//        }
+//    }
 
     private String generateSummary(Diary diary) {
         logger.debug("Generating summary for diary content: {}", diary.getDiaryContents());

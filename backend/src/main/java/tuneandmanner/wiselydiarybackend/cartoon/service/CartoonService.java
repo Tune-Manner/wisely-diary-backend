@@ -12,12 +12,17 @@ import tuneandmanner.wiselydiarybackend.cartoon.dto.request.CreateCartoonRequest
 import tuneandmanner.wiselydiarybackend.cartoon.dto.request.SaveCartoonRequest;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.response.InquiryCartoonResponse;
 
+<<<<<<< HEAD
 import tuneandmanner.wiselydiarybackend.diary.domain.entity.Diary;
 import tuneandmanner.wiselydiarybackend.diary.domain.repository.DiaryRepository;
 import tuneandmanner.wiselydiarybackend.diarysummary.domain.DiarySummary;
 import tuneandmanner.wiselydiarybackend.diarysummary.repository.DiarySummaryRepository;
 import tuneandmanner.wiselydiarybackend.member.domain.entity.Member;
 import tuneandmanner.wiselydiarybackend.member.domain.repository.MemberRepository;
+=======
+import tuneandmanner.wiselydiarybackend.diarysummary.domain.DiarySummary;
+import tuneandmanner.wiselydiarybackend.diarysummary.repository.DiarySummaryRepository;
+>>>>>>> 532c25d9a65f96b956b9ebec34d1984b36bcb1d4
 
 
 import java.io.IOException;

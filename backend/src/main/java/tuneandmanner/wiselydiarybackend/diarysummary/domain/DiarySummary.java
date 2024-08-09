@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import tuneandmanner.wiselydiarybackend.diary.domain.entity.Diary;
 
 @Entity
 @Table(name = "diary_summary")
@@ -19,19 +20,31 @@ public class DiarySummary {
 	@Column(name = "diary_summary_contents", nullable = false)
 	private String diarySummaryContents;
 
-	@Column(name = "diary_code", nullable = false)
-	private Long diaryCode;
 
-	@Builder
-	public DiarySummary(String diarySummaryContents, Long diaryCode) {
-		this.diarySummaryContents = diarySummaryContents;
-		this.diaryCode = diaryCode;
-	}
 
+<<<<<<< HEAD
 	public DiarySummary updateContents(String newContents) {
 		return DiarySummary.builder()
 				.diarySummaryContents(newContents)
 				.diaryCode(this.diaryCode)
 				.build();
 	}
+=======
+	@ManyToOne
+	@JoinColumn(name="diary_code")
+	private Diary diary;
+
+//	@Builder
+//	public DiarySummary(String diarySummaryContents, Diary diary) {
+//		this.diarySummaryContents = diarySummaryContents;
+//		this.diaryCode = diaryCode;
+//	}
+//
+//	public DiarySummary updateContents(String newContents) {
+//		return DiarySummary.builder()
+//			.diarySummaryContents(newContents)
+//			.diaryCode(this.diaryCode)
+//			.build();
+//	}
+>>>>>>> 532c25d9a65f96b956b9ebec34d1984b36bcb1d4
 }
