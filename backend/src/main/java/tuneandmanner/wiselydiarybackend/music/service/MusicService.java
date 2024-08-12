@@ -6,6 +6,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tuneandmanner.wiselydiarybackend.common.exception.NotFoundException;
+import tuneandmanner.wiselydiarybackend.common.exception.ServerInternalException;
 import tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode;
 import tuneandmanner.wiselydiarybackend.diarysummary.domain.DiarySummary;
 import tuneandmanner.wiselydiarybackend.diarysummary.repository.DiarySummaryRepository;
@@ -19,6 +20,8 @@ import tuneandmanner.wiselydiarybackend.music.dto.request.CreateMusicRequest;
 import tuneandmanner.wiselydiarybackend.music.dto.request.SunoApiRequest;
 import tuneandmanner.wiselydiarybackend.rag.service.OpenAIService;
 
+
+import java.time.LocalDateTime;
 
 import static tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode.NOT_FOUND_SUMMARY_CODE;
 
@@ -40,17 +43,17 @@ public class MusicService {
 
         // 1. 가사 생성
         String diarySummaryContents = diarySummary.getDiarySummaryContents();
-
         LyricsGenerationResult result = generateLyricsAndMetadata(diarySummaryContents);
-        Boolean customMode = true;
 
         // 2. Suno API 호출
-        SunoApiRequest sunoRequest = new SunoApiRequest(result.getLyrics(), result.getTags(), customMode, result.getTitle());
+        SunoApiRequest sunoRequest = new SunoApiRequest(result.getLyrics(), result.getTags(), result.getTitle());
         CreateMusicResponse response = sunoApiService.createSong(sunoRequest);
 
         // 3. Music 엔티티 저장
-        saveMusicEntity(result.getTitle(), result.getLyrics(), response.getTaskId());
+        LocalDateTime createdAt = LocalDateTime.now();
+        saveMusicEntity("", result.getTitle(), result.getLyrics(), createdAt, response.getId(), request.getDiarySummaryCode());
 
+        // 4. id 반환
         return response;
     }
 
@@ -58,7 +61,7 @@ public class MusicService {
         String openAIPrompt = String.format(
                 "당신은 작사가입니다. 당신은 감성적이고 위로가 되는 가사를 만들 수 있습니다." +
                 "일기 요약을 참고하여 가사를 생성해주세요." +
-                "일기 요약에 포함된 고유 명사들과 특정 인물의 이름을 직접 사용하지 말고, 그 의미를 함축하여 표현해 주세요." +
+                "일기 요약에 포함된 고유 명사들과 특정 인물의 명칭을 직접 사용하지 말고, 그 의미를 함축하여 표현해 주세요." +
                 "서정적인 단어들을 위주로 선택해주세요. 단, 일기 요약에 날씨에 대한 표현이 직접적으로 없다면 날씨를 표현하지 않습니다." +
                 "[Verse], [Chorus], [PreChorus] 등 송폼을 지정해주세요." +
                 "일기 요약:\n'%s'\n" +
@@ -87,39 +90,50 @@ public class MusicService {
     }
 
     @Transactional
-    protected void saveMusicEntity(String title, String lyrics, String taskId) {
-        Music music = Music.create("", title, lyrics, taskId);
+    protected void saveMusicEntity(String musicPath, String title, String lyrics, LocalDateTime createdAt, String clipId, Long diarySummaryCode) {
+        Music music = Music.create(musicPath, title, lyrics, createdAt, clipId, diarySummaryCode);
         musicRepository.save(music);
     }
 
     public MusicPlaybackResponse getMusicPlayback(Long musicCode) {
-        Music music = musicRepository.findById(musicCode)
-                .orElseThrow(() -> new NotFoundException(ExceptionCode.NOT_FOUND_TASK_ID));
 
-        SunoClipResponse clipResponse = sunoApiService.getClipResponse(music.getTaskId());
+        Music music = musicRepository.findByMusicCode(musicCode)
+                .orElseThrow(() -> {
+                    log.error("Music not found for musicCode: {}", musicCode);
+                    return new NotFoundException(ExceptionCode.NOT_FOUND_CLIP_ID);
+                });
 
-        log.info("SunoClipResponse: {}", clipResponse);
-        log.info("Data: {}", clipResponse.getData());
+        String clipId = music.getClipId();
 
-        if (clipResponse.getData() == null || clipResponse.getData().getClips() == null || clipResponse.getData().getClips().isEmpty()) {
-            throw new NotFoundException(ExceptionCode.NOT_FOUND_CLIP_URL);
+        if (clipId == null || clipId.isEmpty()) {
+            log.error("ClipId not found for musicCode: {}", musicCode);
+            throw new NotFoundException(ExceptionCode.NOT_FOUND_CLIP_ID);
         }
 
-        SunoClipResponse.Data.Clip firstClip = clipResponse.getData().getClips().values().iterator().next();
-        log.info("First Clip: {}", firstClip);
+        try {
+            SunoClipResponse clipResponse = sunoApiService.getClipResponse(clipId);
 
-        if (firstClip.getVideoUrl() == null && firstClip.getAudioUrl() == null) {
-            throw new NotFoundException(ExceptionCode.NOT_FOUND_CLIP_URL);
+            SunoClipResponse.Clip firstClip = clipResponse.getClips().get(0);
+            log.debug("First Clip details for musicCode {}: {}", musicCode, firstClip);
+
+            if (firstClip.getVideoUrl() == null && firstClip.getAudioUrl() == null) {
+                log.error("No video or audio URL found in clip for musicCode: {}", musicCode);
+                throw new NotFoundException(ExceptionCode.NOT_FOUND_CLIP_URL);
+            }
+
+            return MusicPlaybackResponse.of(
+                    music.getMusicCode(),
+                    music.getMusicTitle(),
+                    music.getMusicLyrics(),
+                    clipResponse,
+                    music.getCreatedAt(),
+                    music.getDiarySummaryCode()
+            );
+
+        } catch (Exception e) {
+            log.error("Error occurred while getting music playback for musicCode: {}", musicCode, e);
+            throw new ServerInternalException(ExceptionCode.FAILED_TO_GET_MUSIC_PLAYBACK);
         }
-
-        return MusicPlaybackResponse.of(
-                music.getMusicCode(),
-                music.getMusicTitle(),
-                music.getMusicLyrics(),
-                clipResponse,
-                music.getCreatedAt(),
-                music.getDiarySummaryCode()
-        );
     }
 
 }
