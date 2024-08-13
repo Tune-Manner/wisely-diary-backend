@@ -24,25 +24,21 @@ public class VectorStoreService {
 
     private static final Logger logger = LoggerFactory.getLogger(VectorStoreService.class);
 
-    private final PgVectorStore pgVectorStoreSummary;
     private final PgVectorStore pgVectorStoreLetter;
-    private final PgVectorStore pgVectorStoreMusic;
+    private final PgVectorStore pgVectorStoreImage;
 
     /**
-     * VectorStoreService의 생성자입니다.
-     * @param pgVectorStoreSummary 요약을 위한 벡터 저장소
+     * VectorStoreService 의 생성자입니다.
      * @param pgVectorStoreLetter 편지를 위한 벡터 저장소
-     * @param pgVectorStoreMusic 음악을 위한 벡터 저장소
+     * @param pgVectorStoreImage 이미지 생성을 위한 벡터 저장소
      */
-    public VectorStoreService(@Qualifier("pgVectorStoreSummary") PgVectorStore pgVectorStoreSummary,
-                              @Qualifier("pgVectorStoreLetter") PgVectorStore pgVectorStoreLetter,
-                              @Qualifier("pgVectorStoreMusic") PgVectorStore pgVectorStoreMusic
-    ) {
-        this.pgVectorStoreSummary = pgVectorStoreSummary;
+    public VectorStoreService(@Qualifier("pgVectorStoreLetter") PgVectorStore pgVectorStoreLetter,
+                              @Qualifier("pgVectorStoreImage") PgVectorStore pgVectorStoreImage) {
         this.pgVectorStoreLetter = pgVectorStoreLetter;
-        this.pgVectorStoreMusic = pgVectorStoreMusic;
-        logger.info("VectorStoreService initialized with summary, letter, and music stores.");
+        this.pgVectorStoreImage = pgVectorStoreImage;
+        logger.info("VectorStoreService initialized with letter and image stores.");
     }
+
 
     /**
      * 주어진 쿼리와 유사한 문서를 검색합니다.
@@ -154,9 +150,8 @@ public class VectorStoreService {
         logger.debug("Getting store for type: '{}'", trimmedStoreType);
 
         PgVectorStore store = switch (trimmedStoreType) {
-            case "summary" -> pgVectorStoreSummary;
             case "letter" -> pgVectorStoreLetter;
-            case "music" -> pgVectorStoreMusic;
+            case "image" -> pgVectorStoreImage;
             default -> {
                 logger.error("Invalid store type requested: '{}'", trimmedStoreType);
                 throw new IllegalArgumentException("Invalid store type: " + trimmedStoreType);
@@ -166,6 +161,7 @@ public class VectorStoreService {
         logger.debug("Retrieved store for type: '{}'", trimmedStoreType);
         return store;
     }
+
     public boolean isDuplicateOrSimilarDocument(String content, String storeType) {
         logger.debug("Checking for duplicate or similar document. Content length: {}, StoreType: {}", content.length(), storeType);
 

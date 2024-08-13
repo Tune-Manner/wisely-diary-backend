@@ -56,18 +56,13 @@ public class PGVectorStoreConfig {
     }
 
     @Bean
-    public PgVectorStore pgVectorStoreSummary(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
-        return createCustomPgVectorStore(jdbcTemplate, embeddingModel, "vector_store_summary", objectMapper);
-    }
-
-    @Bean
     public PgVectorStore pgVectorStoreLetter(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
         return createCustomPgVectorStore(jdbcTemplate, embeddingModel, "vector_store_letter", objectMapper);
     }
 
     @Bean
-    public PgVectorStore pgVectorStoreMusic(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
-        return createCustomPgVectorStore(jdbcTemplate, embeddingModel, "vector_store_music", objectMapper);
+    public PgVectorStore pgVectorStoreImage(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
+        return createCustomPgVectorStore(jdbcTemplate, embeddingModel, "vector_store_image", objectMapper);
     }
 
     @Bean
