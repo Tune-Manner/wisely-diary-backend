@@ -27,11 +27,14 @@ public class DalleApiService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(openAiConfig.getApiKey());
 
-        String refinedPrompt = "Create a single image with 4 webtoon-style comic panels in a 2x2 grid. " +
-                "Use simple, clean line art with black lines on a white background. " +
-                "Add small pops of pastel color only to characters and minimal background elements. " +
-                "Depict all characters with typical Korean features and hairstyles. " +
-                "Do not include text or speech bubbles. " +
+        String refinedPrompt =
+//                "Create a single image with 4 webtoon-style comic panels in a 2x2 grid. " +
+//                "Use simple, clean line art with black lines on a white background. " +
+//                "Add small pops of pastel color only to characters and minimal background elements. " +
+//                "Depict all characters with typical Korean features and hairstyles. " +
+                "웹툰 스타일의 네컷 만화를 2x2 그리드로 구성하여 하나의 이미지를 그려주세요. 깔끔한 선으로, " +
+                        "흰색 배경에 검은 선을 사용하세요.배경은 단순하게 그려주고 캐릭터 요소에만 파스텔 색상으로 은은하게 색칠해주세요." +
+                        "모든 캐릭터는 현대의 한국인 특징과 헤어 스타일을 가지도록 그리세요" +
                 prompt;
 
         refinedPrompt = truncatePrompt(refinedPrompt, 1000);  // DALL-E 3 has a 4000 character limit
