@@ -9,5 +9,5 @@ import lombok.*;
 @AllArgsConstructor
 public class CreateCartoonRequest {
 
-    private Integer diarySummaryCode;
+    private Long diarySummaryCode;
 }

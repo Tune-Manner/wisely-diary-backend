@@ -1,24 +1,33 @@
 package tuneandmanner.wiselydiarybackend.diary.presentation;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tuneandmanner.wiselydiarybackend.diary.dto.request.DiaryDetailRequest;
-import tuneandmanner.wiselydiarybackend.diary.dto.response.DiaryDetailResponse;
 import tuneandmanner.wiselydiarybackend.diary.service.DiaryService;
 
-@Slf4j
-@RequiredArgsConstructor
-@RequestMapping("api/diary")
+import java.util.Map;
+
 @RestController
+@RequestMapping("/api")
 public class DiaryController {
 
-    private final DiaryService diaryService;
+    @Autowired
+    private DiaryService diaryService;
 
-    @PostMapping("selectdetail")
-    public DiaryDetailResponse selectDetailDiary(@RequestBody DiaryDetailRequest request){
-        log.info("DiaryController.selectDetailDiary");
+//    @GetMapping("/rag/letter/{diaryCode}")
+//    public Map<String, String> generateLetter(@PathVariable Long diaryCode) {
+//        return diaryService.generateLetter(diaryCode);
+//    }
 
-        return diaryService.getDiaryContents(request);
+    /**
+     * 일기를 요약하고 저장하는 엔드포인트
+     * @param diaryCode 요약할 일기의 코드
+     * @return 생성된 요약 내용
+     */
+    @GetMapping("/rag/summarize/{diaryCode}")
+    public ResponseEntity<String> summarizeDiary(@PathVariable Long diaryCode) {
+        String summary = diaryService.summarizeDiary(diaryCode);
+        return ResponseEntity.ok(summary);
     }
 }
+

@@ -1,16 +1,20 @@
 package tuneandmanner.wiselydiarybackend.cartoon.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import tuneandmanner.wiselydiarybackend.auth.config.OpenAiConfig;
-import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.DiarySummary;
-import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.DiarySummaryRepository;
-
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import tuneandmanner.wiselydiarybackend.auth.config.OpenAiConfig;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,8 +42,10 @@ public class ChatGptService {
                 "4. Depict celebrities or idols as public figures, not friends.\n" +
                 "5. Do not use text or speech bubbles.\n" +
                 "6. Depict all characters with typical Korean features and hairstyles.\n" +
-                "Format your response as: 'Create a single image with 4 webtoon-style comic panels in a 2x2 grid:\n" +
-                "P1: [Brief description]\nP2: [Brief description]\nP3: [Brief description]\nP4: [Brief description]'";
+                "Format your response as: " +
+//                "'Create a single image with 4 webtoon-style comic panels in a 2x2 grid:\n" +
+                "P1: [Brief description]\nP2: [Brief description]\nP3: [Brief description]\nP4: [Brief description]'"+
+                "P1~P4에 요약된 내용을 한국어로 번역해줘";
 
         String userPrompt = "Based on this diary entry, create a prompt for a 4-panel webtoon-style comic: \"" + diarySummary + "\"";
 
