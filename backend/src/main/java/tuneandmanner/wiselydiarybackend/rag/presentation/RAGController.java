@@ -10,12 +10,15 @@ import tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/rag")
 public class RAGController {
 
     private final VectorStoreService vectorStoreService;
+    private static final List<String> VALID_STORE_TYPES = Arrays.asList("letter", "image");
 
     public RAGController(VectorStoreService vectorStoreService) {
         this.vectorStoreService = vectorStoreService;
@@ -23,11 +26,15 @@ public class RAGController {
 
     @PostMapping("/upload")
     public ResponseEntity<String> uploadDocument(@RequestParam("file") MultipartFile file, @RequestParam("storeType") String storeType) {
+        if (!VALID_STORE_TYPES.contains(storeType.toLowerCase())) {
+            throw new IllegalArgumentException("Invalid store type. Valid types are: letter, image");
+        }
+
         try {
             String content = new String(file.getBytes(), StandardCharsets.UTF_8);
             String fileName = file.getOriginalFilename();
 
-            String result = vectorStoreService.addDocumentFromText(content, fileName, storeType);
+            String result = vectorStoreService.addDocumentFromText(content, fileName, storeType.toLowerCase());
             return ResponseEntity.ok(result);
         } catch (IOException e) {
             throw new DocumentUploadException(ExceptionCode.DOCUMENT_UPLOAD_ERROR);
