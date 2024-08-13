@@ -7,5 +7,5 @@ import tuneandmanner.wiselydiarybackend.music.domain.entity.Music;
 import java.util.Optional;
 
 public interface MusicRepository extends JpaRepository<Music, Long> {
-    Optional<Music> findByTaskId(@Param("taskId") String taskId);
+    Optional<Music> findByMusicCode(Long musicCode);
 }

@@ -3,7 +3,7 @@ package tuneandmanner.wiselydiarybackend.music.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import tuneandmanner.wiselydiarybackend.auth.config.SunoApiConfig;
@@ -12,9 +12,9 @@ import tuneandmanner.wiselydiarybackend.common.exception.NotFoundException;
 import tuneandmanner.wiselydiarybackend.common.exception.ServerInternalException;
 import tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode;
 import tuneandmanner.wiselydiarybackend.common.util.TokenUtils;
-import tuneandmanner.wiselydiarybackend.music.dto.reponse.CreateMusicResponse;
-import tuneandmanner.wiselydiarybackend.music.dto.reponse.SunoApiResponse;
-import tuneandmanner.wiselydiarybackend.music.dto.reponse.SunoClipResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.CreateMusicResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.SunoApiResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.SunoClipResponse;
 import tuneandmanner.wiselydiarybackend.music.dto.request.SunoApiRequest;
 
 @Slf4j
@@ -37,7 +37,7 @@ public class SunoApiService {
         log.info("SunoApiRequest: {}", sunoRequest);
 
         SunoApiResponse response = webClient.post()
-                .uri("/api/v1/suno/create")
+                .uri("/api/v2/suno/v3.5/custom/create-lyrics-song")
                 .header("Authorization", token)
                 .bodyValue(sunoRequest)
                 .retrieve()
@@ -47,41 +47,38 @@ public class SunoApiService {
         return CreateMusicResponse.from(response);
     }
 
-    public SunoClipResponse getClipResponse(String taskId) {
-        if (taskId == null || taskId.isEmpty()) {
-            throw new IllegalArgumentException("Invalid taskId: " + taskId);
-        }
+    public SunoClipResponse getClipResponse(String clipId) {
 
         String token = tokenUtils.addBearerPrefix(sunoApiConfig.getToken());
 
-        log.info("Requesting clip URL for task ID: {}", taskId);
-        log.info("Using token: {}", token);
-
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/suno/clip/{taskId}")
-                        .build(taskId))
+                        .path("/api/v2/suno/v3.5/clips")
+                        .queryParam("ids", clipId)
+                        .build())
                 .header("Authorization", token)
                 .retrieve()
-                .onStatus(status -> !status.is2xxSuccessful(), response -> {
-                    HttpStatusCode statusCode = response.statusCode();
-                    log.error("Error response from Suno API. Status: {}", statusCode);
-                    if (statusCode == HttpStatus.UNAUTHORIZED) {
-                        return Mono.error(new CustomException(ExceptionCode.UNAUTHORIZED));
-                    } else if (statusCode == HttpStatus.FORBIDDEN) {
-                        return Mono.error(new CustomException(ExceptionCode.ACCESS_DENIED));
-                    } else if (statusCode == HttpStatus.NOT_FOUND) {
-                        return Mono.error(new NotFoundException(ExceptionCode.NOT_FOUND_CLIP_URL));
-                    } else if (statusCode.is4xxClientError()) {
-                        return Mono.error(new CustomException(ExceptionCode.CLIENT_ERROR));
-                    } else if (statusCode.is5xxServerError()) {
-                        return Mono.error(new ServerInternalException(ExceptionCode.SERVER_ERROR));
-                    } else {
-                        return Mono.error(new CustomException(ExceptionCode.UNKNOWN_ERROR));
-                    }
-                })
+                .onStatus(HttpStatusCode::is5xxServerError, this::handleServerError)
+                .onStatus(HttpStatusCode::is4xxClientError, this::handleClientError)
                 .bodyToMono(SunoClipResponse.class)
+                .doOnError(error -> log.error("Error occurred while calling Suno API", error))
                 .blockOptional()
                 .orElseThrow(() -> new NotFoundException(ExceptionCode.NOT_FOUND_CLIP_URL));
+    }
+
+    private Mono<Throwable> handleServerError(ClientResponse response) {
+        return response.bodyToMono(String.class)
+                .flatMap(body -> {
+                    log.error("Server error: {}. Response body: {}", response.statusCode(), body);
+                    return Mono.error(new ServerInternalException(ExceptionCode.SERVER_ERROR));
+                });
+    }
+
+    private Mono<Throwable> handleClientError(ClientResponse response) {
+        return response.bodyToMono(String.class)
+                .flatMap(body -> {
+                    log.error("Client error: {}. Response body: {}", response.statusCode(), body);
+                    return Mono.error(new CustomException(ExceptionCode.CLIENT_ERROR));
+                });
     }
 }
