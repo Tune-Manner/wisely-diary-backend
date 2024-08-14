@@ -176,20 +176,24 @@ public class CustomPgVectorStore extends PgVectorStore implements InitializingBe
                         "LIMIT ?",
                 tableName);
 
-        return jdbcTemplate.query(sql, new Object[]{
-                queryEmbedding.toArray(new Double[0]),
-                queryEmbedding.toArray(new Double[0]),
-                request.getTopK()
-        }, new RowMapper<Document>() {
-            @Override
-            public Document mapRow(ResultSet rs, int rowNum) throws SQLException {
-                UUID id = UUID.fromString(rs.getString("id"));
-                String content = rs.getString("content");
-                String metadataJson = rs.getString("metadata");
-                Map<String, Object> metadata = parseMetadata(metadataJson);
-                return new Document(id.toString(), content, metadata);
-            }
-        });
+        return jdbcTemplate.query(
+                con -> {
+                    PreparedStatement ps = con.prepareStatement(sql);
+                    Array array1 = con.createArrayOf("float4", queryEmbedding.toArray());
+                    Array array2 = con.createArrayOf("float4", queryEmbedding.toArray());
+                    ps.setArray(1, array1);
+                    ps.setArray(2, array2);
+                    ps.setInt(3, request.getTopK());
+                    return ps;
+                },
+                (rs, rowNum) -> {
+                    UUID id = UUID.fromString(rs.getString("id"));
+                    String content = rs.getString("content");
+                    String metadataJson = rs.getString("metadata");
+                    Map<String, Object> metadata = parseMetadata(metadataJson);
+                    return new Document(id.toString(), content, metadata);
+                }
+        );
     }
 
     private Map<String, Object> parseMetadata(String metadataJson) {
