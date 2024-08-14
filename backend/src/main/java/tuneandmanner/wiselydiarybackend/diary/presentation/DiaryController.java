@@ -30,3 +30,4 @@ public class DiaryController {
         return ResponseEntity.ok(summary);
     }
 }
+

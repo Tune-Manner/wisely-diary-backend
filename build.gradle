@@ -45,6 +45,9 @@ dependencies {
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.3'
+//    implementation 'com.harium.supabase:core:0.0.1'
+    implementation platform('software.amazon.awssdk:bom:2.20.56')
+    implementation 'software.amazon.awssdk:s3'
 }
 
 dependencyManagement {
