@@ -1,6 +1,8 @@
 package tuneandmanner.wiselydiarybackend.imagesubmit.service;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,7 +10,11 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import tuneandmanner.wiselydiarybackend.common.exception.ResourceNotFoundException;
+import tuneandmanner.wiselydiarybackend.common.exception.S3OperationException;
 import tuneandmanner.wiselydiarybackend.imagesubmit.domain.entity.Image;
 import tuneandmanner.wiselydiarybackend.imagesubmit.domain.repository.ImageRepository;
 
@@ -21,6 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
 
+    private static final Logger log = LoggerFactory.getLogger(ImageServiceImpl.class);
     private final ImageRepository imageRepository;
     private final S3Client s3Client;
 
@@ -76,17 +83,33 @@ public class ImageServiceImpl implements ImageService {
     @Transactional
     public void deleteImage(Long imageCode) {
         Image image = imageRepository.findById(imageCode)
-                .orElseThrow(() -> new RuntimeException("Image not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Image not found with code: " + imageCode));
 
-        // Delete from S3
-        String key = image.getImagePath().substring(image.getImagePath().lastIndexOf('/') + 1);
-        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .build();
-        s3Client.deleteObject(deleteObjectRequest);
+        String key = extractKeyFromImagePath(image.getImagePath());
 
-        // Delete from database
+        try {
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+            log.info("Successfully deleted S3 object. Bucket: {}, Key: {}", bucketName, key);
+        } catch (NoSuchKeyException e) {
+            log.warn("Object not found in S3 bucket. Bucket: {}, Key: {}. Proceeding with database deletion.", bucketName, key);
+        } catch (S3Exception e) {
+            log.error("Error deleting S3 object. Bucket: {}, Key: {}", bucketName, key, e);
+            throw new S3OperationException("Failed to delete image from S3", e);
+        }
+
         imageRepository.delete(image);
+        log.info("Successfully deleted image from database. Image code: {}", imageCode);
+    }
+
+    private String extractKeyFromImagePath(String imagePath) {
+        // URL에서 키(파일 이름)를 추출하는 로직
+        // 예: https://your-bucket.s3.region.amazonaws.com/folder/image.jpg에서 "folder/image.jpg"를 추출
+        String[] parts = imagePath.split("/");
+        return parts[parts.length - 1];
     }
 }
