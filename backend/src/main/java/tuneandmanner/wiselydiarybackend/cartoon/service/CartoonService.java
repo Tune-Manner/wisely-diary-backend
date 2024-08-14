@@ -119,10 +119,10 @@ public class CartoonService {
 
         Member member = memberRepository.findByMemberId(memberId);
 
-        List<Diary> diaries = diaryRepository.findByMemberCodeAndCreatedAtBetweenAndDiaryStatus(
-                member.getMemberCode(), startOfDay, endOfDay, "EXIST");
+        List<Diary> diaries = diaryRepository.findByMemberIdAndCreatedAtBetweenAndDiaryStatus(
+                member.getMemberId(), startOfDay, endOfDay, "EXIST");
 
-        log.info("로그0"+member.getMemberCode());
+        log.info("로그0"+member.getMemberId());
         log.info("로그1"+diaries);
         if (diaries.isEmpty()) {
             log.info("No diaries found for the given date and member");

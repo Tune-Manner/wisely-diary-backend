@@ -3,7 +3,6 @@ package tuneandmanner.wiselydiarybackend.diary.domain.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.DiarySummary;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,7 +16,7 @@ public class Diary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "diary_code")
-    private Integer diaryCode;
+    private Long diaryCode;
 
     @Column(name = "diary_contents")
     private String diaryContents;
