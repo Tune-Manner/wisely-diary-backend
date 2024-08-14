@@ -32,9 +32,13 @@ public class DalleApiService {
 //                "Use simple, clean line art with black lines on a white background. " +
 //                "Add small pops of pastel color only to characters and minimal background elements. " +
 //                "Depict all characters with typical Korean features and hairstyles. " +
-                "웹툰 스타일의 네컷 만화를 2x2 그리드로 구성하여 하나의 이미지를 그려주세요. 깔끔한 선으로, " +
+                "웹툰 스타일의 4컷 만화로 구성하여 하나의 이미지를 그려주세요. 깔끔한 선으로, " +
                         "흰색 배경에 검은 선을 사용하세요.배경은 단순하게 그려주고 캐릭터 요소에만 파스텔 색상으로 은은하게 색칠해주세요." +
-                        "모든 캐릭터는 현대의 한국인 특징과 헤어 스타일을 가지도록 그리세요" +
+                        "아래의 프롬프트대로 그려주세요."+
+                        "모든 캐릭터는 현대의 한국인 특징과 헤어 스타일을 가지도록 그리세요." +
+                        "그림을 그릴 때 컷마다 설명되지 않은 내용은 그리지 말아주세요." +
+                        "이 만화의 주인공은 20대 한국인 남성입니다." +
+
                 prompt;
 
         refinedPrompt = truncatePrompt(refinedPrompt, 1000);  // DALL-E 3 has a 4000 character limit

@@ -10,5 +10,5 @@ import java.util.Optional;
 
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
-    List<Diary> findByMemberCodeAndCreatedAtBetweenAndDiaryStatus(Long memberCode, LocalDateTime start, LocalDateTime end, String status);
+    List<Diary> findByMemberIdAndCreatedAtBetweenAndDiaryStatus(String memberId, LocalDateTime start, LocalDateTime end, String status);
 }

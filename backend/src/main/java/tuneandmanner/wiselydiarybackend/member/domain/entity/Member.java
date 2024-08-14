@@ -15,12 +15,10 @@ import java.time.LocalDateTime;
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memberCode;
     private String memberId;
     private String memberEmail;
     private LocalDateTime joinAt;
     private LocalDateTime withdrawAt;
-    private String password;
     private String memberName;
     private String memberStatus;
 

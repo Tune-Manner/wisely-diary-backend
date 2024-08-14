@@ -27,8 +27,8 @@ public class Diary {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "member_code")
-    private Long memberCode;
+    @Column(name = "member_id")
+    private String memberId;
 
     @Column(name = "emotion_code", nullable = false)
     private Integer emotionCode;
@@ -42,7 +42,7 @@ public class Diary {
             String diaryContents,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            Long memberCode,
+            String memberId,
             Integer emotionCode,
             String diaryStatus
     ) {
@@ -50,7 +50,7 @@ public class Diary {
         this.diaryContents = diaryContents;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.memberCode = memberCode;
+        this.memberId = memberId;
         this.emotionCode = emotionCode;
         this.diaryStatus = diaryStatus;
     }

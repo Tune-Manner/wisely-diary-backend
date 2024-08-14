@@ -33,19 +33,21 @@ public class ChatGptService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(openAiConfig.getApiKey());
 
-        String systemMessage = "You are an expert in creating prompts for webtoon-style comics. " +
-                "Create 4 panel descriptions based on the given diary entry. Be concise but complete. " +
-                "Follow these guidelines:\n" +
-                "1. Use a simple, clean line art style with black lines on a white background.\n" +
-                "2. Add small pops of pastel color only to characters and minimal background elements.\n" +
-                "3. Accurately reflect events and emotions from the diary.\n" +
-                "4. Depict celebrities or idols as public figures, not friends.\n" +
-                "5. Do not use text or speech bubbles.\n" +
-                "6. Depict all characters with typical Korean features and hairstyles.\n" +
-                "Format your response as: " +
+        String systemMessage = "당신은 웹툰 스타일의 만화를 위한 프롬프트를 만드는 전문가입니다." +
+                "주어진 일기 항목을 바탕으로 4개의 문장을 작성하세요. 간결하지만 완전해야 합니다." +
+                "다음 지침을 따르세요:\n" +
+                "1.흰색 배경에 검은색 선이 있는 단순하고 깔끔한 선화 스타일을 사용합니다.\n" +
+                "2.캐릭터와 최소한의 배경 요소에만 파스텔 색상의 작은 팝을 추가합니다.\n" +
+                "3. 일기장의 사건과 감정을 정확하게 반영합니다.\n" +
+                "4. 유명인이나 아이돌은 친구가 아닌 공적인 인물로 묘사합니다.\n" +
+                "5. 텍스트나 말풍선을 사용하지 않습니다.\n" +
+                "6. 모든 캐릭터를 전형적인 한국인의 이목구비와 헤어스타일로 묘사하세요.\n" +
+                "응답 형식을 다음과 같이 지정합니다: " +
 //                "'Create a single image with 4 webtoon-style comic panels in a 2x2 grid:\n" +
-                "P1: [Brief description]\nP2: [Brief description]\nP3: [Brief description]\nP4: [Brief description]'"+
-                "P1~P4에 요약된 내용을 한국어로 번역해줘";
+                "첫 번째 컷: 주인공이  [Brief description],\n두 번째 컷: 그 이후에는 주인공이  [Brief description],\n세 번째 컷: 그 이후에는 주인공이  [Brief description],\n네 번째 컷: 그 이후에는 주인공이  [Brief description]'" +
+                "각 컷에 대해 어떻게 그릴지 상세하게 표현해주세요."+
+                "첫 번째 컷에서 네 번째 컷에 요약된 내용을 한국어로 번역해주세요."+
+                "프롬프트를 영어로 번역해서 나타내주세요." ;
 
         String userPrompt = "Based on this diary entry, create a prompt for a 4-panel webtoon-style comic: \"" + diarySummary + "\"";
 
