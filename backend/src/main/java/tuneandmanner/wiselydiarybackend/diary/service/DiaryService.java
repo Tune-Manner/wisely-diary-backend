@@ -71,7 +71,7 @@ public class DiaryService {
 
         try {
             logger.debug("Fetching diary from repository");
-            Diary diary = diaryRepository.findById(Math.toIntExact(diaryCode))
+            Diary diary = diaryRepository.findById((long) Math.toIntExact(diaryCode))
                     .orElseThrow(() -> {
                         logger.error("Diary not found with code: {}", diaryCode);
                         return new RuntimeException("일기를 찾을 수 없습니다.");

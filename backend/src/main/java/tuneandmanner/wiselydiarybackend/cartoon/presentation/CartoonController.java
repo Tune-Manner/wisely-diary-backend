@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.request.CreateCartoonRequest;
+import tuneandmanner.wiselydiarybackend.cartoon.dto.request.CreateLetterCartoonRequest;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.request.SaveCartoonRequest;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.response.InquiryCartoonResponse;
 import tuneandmanner.wiselydiarybackend.cartoon.service.CartoonService;
@@ -29,6 +30,15 @@ public class CartoonController {
         log.info("CartoonController.createCartoon");
 
         String cartoonUrl = cartoonService.createCartoonPrompt(request);
+        return ResponseEntity.ok(cartoonUrl);
+    }
+
+    //편지 만화 생성
+    @PostMapping("/letterCartoon/create")
+    public ResponseEntity<String> createLetterCartoon(@RequestBody CreateLetterCartoonRequest request){
+        log.info("CartoonController.createLetterCartoon");
+
+        String cartoonUrl = cartoonService.createLetterCartoonPrompt(request);
         return ResponseEntity.ok(cartoonUrl);
     }
 

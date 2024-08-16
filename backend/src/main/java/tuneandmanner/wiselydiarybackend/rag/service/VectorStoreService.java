@@ -1,7 +1,10 @@
 package tuneandmanner.wiselydiarybackend.rag.service;
 
+import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.ai.vectorstore.PgVectorStore;
 import org.springframework.ai.vectorstore.SearchRequest;
@@ -15,6 +18,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.springframework.shell.command.invocation.InvocableShellMethod.log;
+
 /**
  * 벡터 저장소 관련 기능을 제공하는 서비스 클래스입니다.
  * 이 클래스는 요약, 편지, 음악에 대한 벡터 저장소를 관리합니다.
@@ -26,19 +31,25 @@ public class VectorStoreService {
 
     private final PgVectorStore pgVectorStoreLetter;
     private final PgVectorStore pgVectorStoreImage;
+    private final EmbeddingModel embeddingModel;
+    private final JdbcTemplate jdbcTemplate;
 
     /**
      * VectorStoreService 의 생성자입니다.
+     *
      * @param pgVectorStoreLetter 편지를 위한 벡터 저장소
-     * @param pgVectorStoreImage 이미지 생성을 위한 벡터 저장소
+     * @param pgVectorStoreImage  이미지 생성을 위한 벡터 저장소
+     * @param jdbcTemplate
      */
     public VectorStoreService(@Qualifier("pgVectorStoreLetter") PgVectorStore pgVectorStoreLetter,
-                              @Qualifier("pgVectorStoreImage") PgVectorStore pgVectorStoreImage) {
+                              @Qualifier("pgVectorStoreImage") PgVectorStore pgVectorStoreImage,
+                              @Qualifier("openAiEmbeddingModel") EmbeddingModel embeddingModel, JdbcTemplate jdbcTemplate) {
         this.pgVectorStoreLetter = pgVectorStoreLetter;
         this.pgVectorStoreImage = pgVectorStoreImage;
+        this.embeddingModel = embeddingModel;
+        this.jdbcTemplate = jdbcTemplate;
         logger.info("VectorStoreService initialized with letter and image stores.");
     }
-
 
     /**
      * 주어진 쿼리와 유사한 문서를 검색합니다.
@@ -59,6 +70,32 @@ public class VectorStoreService {
         return contents;
     }
 
+    public List<String> searchSimilarCartoonDocuments(String query, String storeType) {
+        log.info("감정에 대한 유사 문서 검색 시작: '{}', 저장소 유형: {}", query, storeType);
+
+        List<Double> queryEmbedding = embeddingModel.embed(query);
+
+        String sql = "SELECT content " +
+                "FROM vector_store_image " +
+                "WHERE content ILIKE ? " +
+                "ORDER BY embedding <=> ?::vector " +
+                "LIMIT 2";
+
+        List<String> results = jdbcTemplate.query(
+                sql,
+                (ps) -> {
+                    ps.setString(1, query + "%");
+                    String vectorString = queryEmbedding.stream()
+                            .map(Object::toString)
+                            .collect(Collectors.joining(",", "[", "]"));
+                    ps.setString(2, vectorString);
+                },
+                (rs, rowNum) -> rs.getString("content")
+        );
+
+        log.info("감정 '{}'에 대해 {} 개의 유사 문서를 찾았습니다", query, results.size());
+        return results;
+    }
     /**
      * 새로운 문서를 벡터 저장소에 추가합니다.
      * @param content 문서 내용

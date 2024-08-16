@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,6 +22,8 @@ public class Member {
     private LocalDateTime withdrawAt;
     private String memberName;
     private String memberStatus;
+    private String memberGender;
+    private LocalDate memberAge;
 
 
 }

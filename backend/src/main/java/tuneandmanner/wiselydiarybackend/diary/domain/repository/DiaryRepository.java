@@ -10,7 +10,7 @@ import java.util.Optional;
 
 
 @Repository
-public interface DiaryRepository extends JpaRepository<Diary, Integer> {
+public interface DiaryRepository extends JpaRepository<Diary, Long> {
     Optional<Diary> findByMemberIdAndCreatedAtBetween(String memberId, LocalDateTime start, LocalDateTime end);
 
     List<Diary> findByMemberIdAndCreatedAtBetweenAndDiaryStatus(String memberId, LocalDateTime startOfDay, LocalDateTime endOfDay, String exist);
