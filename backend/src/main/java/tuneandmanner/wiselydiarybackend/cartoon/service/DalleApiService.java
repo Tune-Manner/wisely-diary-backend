@@ -27,7 +27,7 @@ public class DalleApiService {
 
     public String generateCartoonPrompt(Emotion emotion,Member member, String prompt) {
         log.info("DalleApiService.generateCartoonPrompt");
-
+        System.out.println("한국");
         LocalDate birthDate = member.getMemberAge(); // 생년월일
         LocalDate currentDate = LocalDate.now(); // 현재 날짜
         int age = Period.between(birthDate, currentDate).getYears();
@@ -39,6 +39,7 @@ public class DalleApiService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(openAiConfig.getApiKey());
 
+        System.out.println("일본");
         String emotionContents = null;
         switch (emotion.getEmotionCode()){
             case 1:
@@ -72,23 +73,17 @@ public class DalleApiService {
                 emotionContents = "당황";
         }
         System.out.println("오늘의기분은???"+emotionContents);
-        String refinedPrompt =
-//                "Create a single image with 4 webtoon-style comic panels in a 2x2 grid. " +
-//                "Use simple, clean line art with black lines on a white background. " +
-//                "Add small pops of pastel color only to characters and minimal background elements. " +
-//                "Depict all characters with typical Korean features and hairstyles. " +
-                "페르소나 : "+age+"세 "+gender+"\n" +
-                        "감정:"+ emotionContents+"\n" +
-                        "\n" +
-                        "'"+prompt+"'" +
-                        "\n" +
-                        "\n" +
-                        "오늘 일기를 한문장으로 요약해줘. \n" +
-                        "그 문장을 Minimalist Style 일러스트로 만들어줘.그리고 텍스트는 빼고 만들어줘." +
-
-                prompt;
+        String refinedPrompt = "페르소나 : " + age + "세 " + gender + "\n" +
+                "감정: " + emotionContents + "\n" +
+                "\n" +
+                "'" + prompt + "'" +
+                "\n" +
+                "\n" +
+                "오늘 일기를 한문장으로 요약해줘. \n" +
+                "그 문장을 Minimalist Style 일러스트로 만들어줘. 텍스트 없이 만들어줘.";
 
         refinedPrompt = truncatePrompt(refinedPrompt, 1000);  // DALL-E 3 has a 4000 character limit
+
 
         log.info("여기 확인하기 :" + refinedPrompt);
 
@@ -101,6 +96,7 @@ public class DalleApiService {
 
         );
 
+        System.out.println("중국");
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
         try {
@@ -111,6 +107,7 @@ public class DalleApiService {
                     Map.class
             );
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                System.out.println("터키");
                 return extractImageUrlFromResponse(response.getBody());
             }
             log.error("Failed to generate image. Response: {}", response);

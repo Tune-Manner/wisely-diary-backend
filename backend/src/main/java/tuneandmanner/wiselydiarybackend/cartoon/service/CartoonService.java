@@ -14,6 +14,7 @@ import tuneandmanner.wiselydiarybackend.cartoon.dto.request.SaveCartoonRequest;
 import tuneandmanner.wiselydiarybackend.cartoon.dto.response.InquiryCartoonResponse;
 
 
+import tuneandmanner.wiselydiarybackend.common.config.SupabaseStorageService;
 import tuneandmanner.wiselydiarybackend.diary.domain.entity.Diary;
 import tuneandmanner.wiselydiarybackend.diary.domain.repository.DiaryRepository;
 import tuneandmanner.wiselydiarybackend.diarysummary.domain.DiarySummary;
@@ -56,27 +57,27 @@ public class CartoonService {
     private final MemberRepository memberRepository;
     private final EmotionRepository emotionRepository;
     private final VectorStoreService vectorStoreService;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Value("${image.storage.path}")  // YML에서 설정한 경로를 주입
     private String imagePath;
 
-
+    private String uploadImageToSupabase(String localImagePath) {
+        return supabaseStorageService.uploadImage(localImagePath);
+    }
 
 
     private String downloadImage(String imageUrl) {
         try (InputStream in = new URL(imageUrl).openStream()) {
-            String fileName = UUID.randomUUID().toString() + ".png";  // 고유 파일명 생성
+            String fileName = UUID.randomUUID().toString() + ".png";
             Path targetPath = Paths.get(imagePath).resolve(fileName);
-
-            Files.createDirectories(targetPath.getParent());  // 디렉토리 생성
-            Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);  // 이미지 다운로드 및 저장
-
-            return targetPath.toString();  // 로컬 이미지 경로 반환
+            Files.createDirectories(targetPath.getParent());
+            Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return targetPath.toString();
         } catch (IOException e) {
             log.error("Failed to download image", e);
             throw new RuntimeException("Failed to download image", e);
         }
-
     }
     @Transactional
     public String createCartoonPrompt(CreateCartoonRequest request) {
@@ -88,10 +89,15 @@ public class CartoonService {
         Emotion emotion = emotionRepository.findById(diary.getEmotionCode())
                 .orElseThrow(() -> new RuntimeException("Emotion not found"));
         try {
-
-            String cartoonPath = dalleApiService.generateCartoonPrompt(emotion,member,diary.getDiaryContents());
-
-            return cartoonPath;
+            System.out.println("불닭");
+            String cartoonPath = dalleApiService.generateCartoonPrompt(emotion, member, diary.getDiaryContents());
+            System.out.println("소스");
+            // Download and upload to Supabase
+            String localImagePath = downloadImage(cartoonPath);
+            System.out.println("너무");
+            String supabaseUrl = uploadImageToSupabase(localImagePath);
+            System.out.println("매워");
+            return supabaseUrl;
 
         } catch (Exception e) {
             log.error("Error creating cartoon", e);
@@ -101,16 +107,14 @@ public class CartoonService {
 
     @Transactional
     public Long saveCartoon(SaveCartoonRequest request) {
-        log.info("CartoonService.Save cartoon");
-
+        // Download the image from the URL and upload to Supabase
         String localImagePath = downloadImage(request.getCartoonPath());
+        String supabaseUrl = uploadImageToSupabase(localImagePath);
 
-        DiarySummary diarySummary = diarySummaryRepository.findById(request.getDiarySummaryCode())
-                .orElseThrow(() -> new RuntimeException("Diary summary not found"));
-
+        // Save the cartoon with the Supabase URL
         Cartoon cartoon = Cartoon.builder()
-                .cartoonPath(localImagePath)
-                .diarySummaryCode(diarySummary.getDiarySummaryCode())
+                .cartoonPath(supabaseUrl)
+                .diarySummaryCode(request.getDiarySummaryCode())
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -193,9 +197,12 @@ public class CartoonService {
 
         // 5. DALL-E API를 사용하여 이미지 생성
         String imageUrl = dalleApiService.generateImage(prompt);
-        log.info("DALL-E API로 생성된 이미지 URL: {}", imageUrl);
 
-        return imageUrl;
+        // Download and upload to Supabase
+        String localImagePath = downloadImage(imageUrl);
+        String supabaseUrl = uploadImageToSupabase(localImagePath);
+
+        return supabaseUrl;
     }
 
     private String getEmotionContents(Integer emotionCode) {
