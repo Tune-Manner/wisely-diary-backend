@@ -24,8 +24,10 @@ public class Cartoon {
     private String cartoonPath;
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-    @Column(name = "diary_summary_code", nullable = false)
-    private Long diarySummaryCode;
+    @Column(name = "diary_code", nullable = false)
+    private Long diaryCode;
+    @Column(name="type",nullable=false)
+    private String type;
 
     // 생성자, 빌더 등 필요한 메서드 추가
 }

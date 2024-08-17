@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class SupabaseStorageService {
@@ -36,32 +37,29 @@ public class SupabaseStorageService {
                 throw new RuntimeException("Image file does not exist: " + localImagePath);
             }
 
-            String uploadUrl = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + imageFile.getName();
+            String fileName = UUID.randomUUID().toString() + "_" + imageFile.getName();
+            String uploadUrl = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + fileName;
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + supabaseKey);
             headers.set("apikey", supabaseKey);
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            System.out.println("도도"+supabaseKey+bucketName+supabaseUrl);
+
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("file", new FileSystemResource(imageFile));
-            System.out.println("레레");
+
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-            System.out.println("미미");
+
             ResponseEntity<Map> response = restTemplate.exchange(
                     uploadUrl,
                     HttpMethod.POST,
                     requestEntity,
                     Map.class
             );
-            System.out.println("파파");
+
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                System.out.println("솔솔");
-                String uploadedFilePath = (String) response.getBody().get("Key");
-                System.out.println("라라");
-                return supabaseUrl + "/storage/v1/object/public/" + bucketName + "/" + uploadedFilePath;
+                return supabaseUrl + "/storage/v1/object/public/" + bucketName + "/" + fileName;
             } else {
-                System.out.println("시시");
                 throw new RuntimeException("Failed to upload image to Supabase. Response: " + response);
             }
         } catch (Exception e) {

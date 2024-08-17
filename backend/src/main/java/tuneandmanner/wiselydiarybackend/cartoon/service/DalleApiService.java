@@ -27,7 +27,6 @@ public class DalleApiService {
 
     public String generateCartoonPrompt(Emotion emotion,Member member, String prompt) {
         log.info("DalleApiService.generateCartoonPrompt");
-        System.out.println("한국");
         LocalDate birthDate = member.getMemberAge(); // 생년월일
         LocalDate currentDate = LocalDate.now(); // 현재 날짜
         int age = Period.between(birthDate, currentDate).getYears();
@@ -39,7 +38,6 @@ public class DalleApiService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(openAiConfig.getApiKey());
 
-        System.out.println("일본");
         String emotionContents = null;
         switch (emotion.getEmotionCode()){
             case 1:
@@ -96,7 +94,6 @@ public class DalleApiService {
 
         );
 
-        System.out.println("중국");
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
         try {
@@ -107,7 +104,6 @@ public class DalleApiService {
                     Map.class
             );
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                System.out.println("터키");
                 return extractImageUrlFromResponse(response.getBody());
             }
             log.error("Failed to generate image. Response: {}", response);

@@ -69,7 +69,7 @@ public class CartoonService {
 
     private String downloadImage(String imageUrl) {
         try (InputStream in = new URL(imageUrl).openStream()) {
-            String fileName = UUID.randomUUID().toString() + ".png";
+            String fileName = Paths.get(new URL(imageUrl).getPath()).getFileName().toString();
             Path targetPath = Paths.get(imagePath).resolve(fileName);
             Files.createDirectories(targetPath.getParent());
             Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
@@ -89,16 +89,22 @@ public class CartoonService {
         Emotion emotion = emotionRepository.findById(diary.getEmotionCode())
                 .orElseThrow(() -> new RuntimeException("Emotion not found"));
         try {
-            System.out.println("불닭");
             String cartoonPath = dalleApiService.generateCartoonPrompt(emotion, member, diary.getDiaryContents());
-            System.out.println("소스");
             // Download and upload to Supabase
             String localImagePath = downloadImage(cartoonPath);
-            System.out.println("너무");
             String supabaseUrl = uploadImageToSupabase(localImagePath);
-            System.out.println("매워");
-            return supabaseUrl;
 
+
+            // 여기에 데이터베이스 저장 로직 추가
+            Cartoon cartoon = Cartoon.builder()
+                    .cartoonPath(supabaseUrl)
+                    .diaryCode(request.getDiaryCode())
+                    .createdAt(LocalDateTime.now())
+                    .type("Cartoon")
+                    .build();
+            cartoonRepository.save(cartoon);
+
+            return supabaseUrl;
         } catch (Exception e) {
             log.error("Error creating cartoon", e);
             throw new RuntimeException("Failed to create cartoon", e);
@@ -114,7 +120,7 @@ public class CartoonService {
         // Save the cartoon with the Supabase URL
         Cartoon cartoon = Cartoon.builder()
                 .cartoonPath(supabaseUrl)
-                .diarySummaryCode(request.getDiarySummaryCode())
+                .diaryCode(request.getDiaryCode())
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -142,26 +148,17 @@ public class CartoonService {
                 .map(Diary::getDiaryCode)
                 .collect(Collectors.toList());
 
-        List<DiarySummary> diarySummaries = diarySummaryRepository.findByDiaryCodeIn(diaryCodes);
 
-        if (diarySummaries.isEmpty()) {
-            log.info("No diary summaries found for the given diaries");
-            return Collections.emptyList();
-        }
 
-        List<Long> diarySummaryCodes = diarySummaries.stream()
-                .map(DiarySummary::getDiarySummaryCode)
-                .collect(Collectors.toList());
-
-        List<Cartoon> cartoons = cartoonRepository.findByDiarySummaryCodeInAndCreatedAtBetween(
-                diarySummaryCodes, startOfDay, endOfDay);
+        List<Cartoon> cartoons = cartoonRepository.findByDiaryCodeInAndCreatedAtBetween(
+                diaryCodes, startOfDay, endOfDay);
 
         return cartoons.stream()
                 .map(cartoon -> new InquiryCartoonResponse(
                         cartoon.getCartoonCode(),
                         cartoon.getCartoonPath(),
                         cartoon.getCreatedAt(),
-                        cartoon.getDiarySummaryCode()))
+                        cartoon.getDiaryCode()))
                 .collect(Collectors.toList());
     }
 
@@ -202,6 +199,13 @@ public class CartoonService {
         String localImagePath = downloadImage(imageUrl);
         String supabaseUrl = uploadImageToSupabase(localImagePath);
 
+        Cartoon cartoon = Cartoon.builder()
+                .cartoonPath(supabaseUrl)
+                .diaryCode(diary.getDiaryCode())
+                .createdAt(LocalDateTime.now())
+                .type("Letter")
+                .build();
+        cartoonRepository.save(cartoon);
         return supabaseUrl;
     }
 
