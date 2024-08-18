@@ -9,6 +9,8 @@ import tuneandmanner.wiselydiarybackend.emotion.dto.request.EmotionRequest;
 import tuneandmanner.wiselydiarybackend.emotion.domain.repository.EmotionRepository;
 import tuneandmanner.wiselydiarybackend.diary.domain.repository.DiaryRepository;
 import tuneandmanner.wiselydiarybackend.emotion.dto.response.EmotionResponse;
+import tuneandmanner.wiselydiarybackend.member.domain.entity.Member;
+import tuneandmanner.wiselydiarybackend.member.domain.repository.MemberRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,21 +27,38 @@ public class EmotionService {
 
     private final DiaryRepository diaryRepository;
     private final EmotionRepository emotionRepository;
+    private final MemberRepository memberRepository;
 
     public EmotionResponse selectMonthlyEmotion(EmotionRequest request){
         log.info("EmotionService.selectMonthlyEmotion");
 
-        // 1) 월별 감정 코드 조회
+        // 1) memberId로 memberName 조회 (예시)
+        String memberId = request.getMemberId();
+        String memberName =     getMemberNameById(memberId);
+
+        // 2) 월별 감정 코드 조회
         Map<Integer, Integer> yearlyEmotionCodes = getYearlyEmotionCodes(request);
 
-        // 2) 이번달 감정 조회
+        // 3) 이번달 감정 조회
         Map<Integer, Double> thisMonthEmotions = getThisMonthEmotionPercentages(request);
 
-        // 결과를 맵으로 반환
-        return new EmotionResponse(yearlyEmotionCodes, thisMonthEmotions);
+        // 결과를 반환
+        return new EmotionResponse(memberName, yearlyEmotionCodes, thisMonthEmotions);
     }
 
-    // 1) 월별 감정 조회
+    // 1) member_name 조회
+    private String getMemberNameById(String memberId){
+
+        Member member = memberRepository.findByMemberId(memberId);
+
+        if (member != null) {
+            return member.getMemberName();
+        } else {
+            throw new IllegalArgumentException("Member not found with id: " + memberId);
+        }
+    }
+
+    // 2) 월별 감정 조회
     private Map<Integer, Integer> getYearlyEmotionCodes(EmotionRequest request) {
         String memberId = request.getMemberId();
 
@@ -89,7 +108,7 @@ public class EmotionService {
 
 
 
-    // 2) 이번달 감정 조회
+    // 3) 이번달 감정 조회
     private Map<Integer, Double> getThisMonthEmotionPercentages(EmotionRequest request) {
         String memberId = request.getMemberId();
 
