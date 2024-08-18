@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tuneandmanner.wiselydiarybackend.emotion.domain.entity.Emotion;
 import tuneandmanner.wiselydiarybackend.emotion.dto.request.EmotionRequest;
+import tuneandmanner.wiselydiarybackend.emotion.dto.response.EmotionResponse;
 import tuneandmanner.wiselydiarybackend.emotion.service.EmotionService;
 
 import java.util.List;
@@ -24,10 +25,10 @@ public class EmotionController {
 
     //월별 감정통계 조회
     @GetMapping("/inquire")
-    public ResponseEntity<Map<String, List<Emotion>>> monthlyEmotionalStatistics(@RequestBody EmotionRequest request) {
+    public ResponseEntity<EmotionResponse> monthlyEmotionalStatistics(@RequestBody EmotionRequest request) {
         log.info("StatisticsController.monthlyEmotionalStatistics");
 
-        Map<String, List<Emotion>> result = statisticsService.selectMonthlyEmotion(request);
+        EmotionResponse result = statisticsService.selectMonthlyEmotion(request);
 
         return ResponseEntity.ok(result);
     }
