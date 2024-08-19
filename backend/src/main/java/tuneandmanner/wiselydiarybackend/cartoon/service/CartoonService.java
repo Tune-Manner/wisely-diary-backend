@@ -163,7 +163,7 @@ public class CartoonService {
     }
 
     @Transactional
-    public String createLetterCartoonPrompt(CreateLetterCartoonRequest request) {
+    public String createLetterCartoonPrompt(CreateCartoonRequest request) {
         log.info("CartoonService.createLetterCartoonPrompt 시작. diaryCode: {}", request.getDiaryCode());
 
         // 1. 일기와 감정 찾기
