@@ -9,7 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SaveCartoonRequest {
-    private String cartoonPath;
+public class CreateLetterCartoonRequest {
     private Long diaryCode;
 }

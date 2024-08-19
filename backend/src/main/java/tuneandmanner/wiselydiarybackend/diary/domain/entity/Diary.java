@@ -1,27 +1,27 @@
 package tuneandmanner.wiselydiarybackend.diary.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="diary")
+@Table(name = "diary")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
 public class Diary {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "diary_code")
     private Long diaryCode;
 
-    @Column(name = "diary_contents")
+    @Column(name = "diary_contents", nullable = false)
     private String diaryContents;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
@@ -30,10 +30,28 @@ public class Diary {
     @Column(name = "member_id")
     private String memberId;
 
-    @Column(name = "emotion_code")
+    @Column(name = "emotion_code", nullable = false)
     private Integer emotionCode;
 
-    @Column(name = "diary_status")
-    private String diaryStatus;
+    @Column(name = "diary_status", length = 20)
+    private String diaryStatus = "EXIST";
 
+    @Builder
+    public Diary(
+            Long diaryCode,
+            String diaryContents,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt,
+            String memberId,
+            Integer emotionCode,
+            String diaryStatus
+    ) {
+        this.diaryCode = diaryCode;
+        this.diaryContents = diaryContents;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.memberId = memberId;
+        this.emotionCode = emotionCode;
+        this.diaryStatus = diaryStatus;
+    }
 }
