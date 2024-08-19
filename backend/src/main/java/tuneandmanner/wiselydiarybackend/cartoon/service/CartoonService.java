@@ -158,7 +158,8 @@ public class CartoonService {
                         cartoon.getCartoonCode(),
                         cartoon.getCartoonPath(),
                         cartoon.getCreatedAt(),
-                        cartoon.getDiaryCode()))
+                        cartoon.getDiaryCode(),
+                        cartoon.getType()))
                 .collect(Collectors.toList());
     }
 
