@@ -6,8 +6,15 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
 import tuneandmanner.wiselydiarybackend.diary.domain.entity.Diary;
@@ -22,6 +29,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.Objects;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 @Slf4j
 @Service
@@ -32,6 +44,12 @@ public class DiaryService {
     private final DiaryRepository diaryRepository;
     private final DiarySummaryRepository diarySummaryRepository;
     private final RAGService ragService;
+
+    @Value("${spring.ai.openai.api-key}")
+    private String openAiApiKey;
+
+    @Value("${spring.ai.openai.urls.base-url}")
+    private String openAiBaseUrl;
 
     @Autowired
     public DiaryService(DiaryRepository diaryRepository, DiarySummaryRepository diarySummaryRepository, RAGService ragService) {
@@ -132,5 +150,58 @@ public class DiaryService {
             .orElse("해당 날짜의 일기를 찾을 수 없습니다.");
 
         return new DiaryDetailResponse(diaryContents);
+    }
+
+    public String generateDiaryEntry(String prompt) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        logger.debug("Using OpenAI API key: {}", openAiApiKey);
+        logger.debug("Using OpenAI API URL: {}", openAiBaseUrl);
+
+        // 요청 JSON 생성
+        JsonObject requestJson = new JsonObject();
+
+        requestJson.addProperty("model", "gpt-4"); // 사용하려는 모델명을 여기에 추가
+        requestJson.addProperty("temperature", 0.7); // 텍스트 생성의 랜덤성을 조절하는 파라미터
+
+        // 메시지 배열 생성
+        JsonArray messagesArray = new JsonArray();
+        JsonObject userMessage = new JsonObject();
+        userMessage.addProperty("role", "user");
+        userMessage.addProperty("content", prompt);
+        messagesArray.add(userMessage);
+
+        requestJson.add("messages", messagesArray); // messages 필드를 추가
+
+        // GPT API로 POST 요청 보내기
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(openAiApiKey); // OpenAI API Key
+
+
+        HttpEntity<String> entity = new HttpEntity<>(requestJson.toString(), headers);
+
+        String API_URL = openAiBaseUrl + "/chat/completions";
+
+        ResponseEntity<String> response = restTemplate.postForEntity(API_URL, entity, String.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            JsonObject responseJson = JsonParser.parseString(Objects.requireNonNull(response.getBody())).getAsJsonObject();
+            return responseJson.getAsJsonArray("choices").get(0).getAsJsonObject().get("message").getAsJsonObject().get("content").getAsString();
+        } else {
+            throw new RuntimeException("Failed to generate diary entry");
+        }
+    }
+
+    public void saveDiaryEntry(String diaryContent, String memberId, int emotionCode) {
+        Diary diary = Diary.builder()
+            .diaryContents(diaryContent)
+            .memberId(memberId)
+            .createdAt(LocalDateTime.now())
+            .emotionCode(emotionCode)
+            .diaryStatus("EXIST")
+            .build();
+
+        diaryRepository.save(diary);
     }
 }
