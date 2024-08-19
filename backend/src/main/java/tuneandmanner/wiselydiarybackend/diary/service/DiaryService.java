@@ -155,13 +155,10 @@ public class DiaryService {
     public String generateDiaryEntry(String prompt) {
         RestTemplate restTemplate = new RestTemplate();
 
-        logger.debug("Using OpenAI API key: {}", openAiApiKey);
-        logger.debug("Using OpenAI API URL: {}", openAiBaseUrl);
-
         // 요청 JSON 생성
         JsonObject requestJson = new JsonObject();
 
-        requestJson.addProperty("model", "gpt-4"); // 사용하려는 모델명을 여기에 추가
+        requestJson.addProperty("model", "gpt-3.5-turbo"); // 사용하려는 모델명을 여기에 추가
         requestJson.addProperty("temperature", 0.7); // 텍스트 생성의 랜덤성을 조절하는 파라미터
 
         // 메시지 배열 생성
