@@ -12,6 +12,7 @@ import tuneandmanner.wiselydiarybackend.diary.dto.response.DiaryDetailResponse;
 import tuneandmanner.wiselydiarybackend.diary.service.DiaryService;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -22,6 +23,7 @@ public class DiaryController {
     @Autowired
     private DiaryService diaryService;
 
+    // 선택한 날짜의 일기 하나 가져오기
     @PostMapping("/diary/selectdetail")
     public ResponseEntity<DiaryDetailResponse> selectDetailDiary(@RequestBody DiaryDetailRequest request) {
         log.info("DiaryController.selectDetailDiary");
@@ -31,6 +33,19 @@ public class DiaryController {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
             .body(response);
+    }
+
+    // 선택한 달의 일기 내용들 가져오기
+    @PostMapping("/diary/monthly")
+    public ResponseEntity<List<DiaryDetailResponse>> monthlyDiary(@RequestBody DiaryDetailRequest request) {
+        log.info("DiaryController.monthlyDiary");
+
+        List<DiaryDetailResponse> responses = diaryService.getDiaryContentsbyMonth(request);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
+                .body(responses);
+
     }
 
 
