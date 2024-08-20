@@ -5,8 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tuneandmanner.wiselydiarybackend.common.exception.NotFoundException;
-import tuneandmanner.wiselydiarybackend.diarysummary.domain.DiarySummary;
-import tuneandmanner.wiselydiarybackend.diarysummary.repository.DiarySummaryRepository;
+import tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode;
+import tuneandmanner.wiselydiarybackend.diary.domain.entity.Diary;
+import tuneandmanner.wiselydiarybackend.diary.domain.repository.DiaryRepository;
 import tuneandmanner.wiselydiarybackend.letter.domain.entity.Letter;
 import tuneandmanner.wiselydiarybackend.letter.domain.repository.LetterRepository;
 import tuneandmanner.wiselydiarybackend.letter.dto.response.CreateLetterResponse;
@@ -17,9 +18,9 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import static tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode.NOT_FOUND_LETTER_CODE;
-import static tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode.NOT_FOUND_SUMMARY_CODE;
+import static tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode.*;
 
 @Slf4j
 @Service
@@ -27,34 +28,45 @@ import static tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCo
 public class LetterService {
 
     private final LetterRepository letterRepository;
-    private final DiarySummaryRepository diarySummaryRepository;
+    private final DiaryRepository diaryRepository;
     private final RAGService ragService;
     private final VectorStoreService vectorStoreService;
 
-    // 편지 생성 후 저장
     @Transactional
-    public CreateLetterResponse createLetter(Long diarySummaryCode) {
-        DiarySummary diarySummary = diarySummaryRepository.findByDiarySummaryCode(diarySummaryCode)
-                .orElseThrow(() -> new NotFoundException(NOT_FOUND_SUMMARY_CODE));
+    public CreateLetterResponse getOrCreateLetter(Long diaryCode) {
+        // 1. 먼저 기존 편지가 있는지 확인
+        Optional<Letter> existingLetter = letterRepository.findByDiaryCode(diaryCode);
+        if (existingLetter.isPresent()) {
+            return CreateLetterResponse.from(existingLetter.get());
+        }
 
-        String letterContents = generateLetterContents(diarySummary.getDiarySummaryContents());
+        // 2. 기존 편지가 없다면, 새 편지 생성
+        return createNewLetter(diaryCode);
+    }
 
-        Letter letter = Letter.of(
+    private CreateLetterResponse createNewLetter(Long diaryCode) {
+        // 일기의 존재 여부 확인
+        Diary diary = diaryRepository.findByDiaryCode(diaryCode)
+                .orElseThrow(() -> new NotFoundException(ExceptionCode.NOT_FOUND_DIARY_CODE));
+
+        String letterContents = generateLetterContents(diary.getDiaryContents());
+
+        Letter newLetter = Letter.of(
                 null,
                 letterContents,
                 LocalDateTime.now(),
-                diarySummaryCode
+                diaryCode
         );
 
-        Letter savedLetter = letterRepository.save(letter);
-
+        Letter savedLetter = letterRepository.save(newLetter);
         return CreateLetterResponse.from(savedLetter);
     }
 
-    private String generateLetterContents(String diarySummaryContents) {
-        log.info("Generating letter for diary summary: {}", diarySummaryContents);
+    private String generateLetterContents(String diaryContents) {
+        // 기존의 편지 내용 생성 로직
+        log.info("Generating letter for diary : {}", diaryContents);
 
-        List<String> relevantQuotes = getRelevantQuotes(diarySummaryContents);
+        List<String> relevantQuotes = getRelevantQuotes(diaryContents);
         StringBuilder quotesContent = new StringBuilder();
         if (!relevantQuotes.isEmpty()) {
             quotesContent.append("오늘과 어울리는 명언\n");
@@ -64,7 +76,6 @@ public class LetterService {
             quotesContent.append("\n");
         }
 
-        // 명언을 포함한 query 생성
         String query = """
                 당신은 일기를 작성한 사람의 다정한 심리상담 친구입니다.
                 일기 내용을 참고해서 친구처럼 편지를 한국어로 작성해주세요.
@@ -72,11 +83,12 @@ public class LetterService {
                 일기 내용을 바탕으로 위로와 격려의 편지를 한국어로 작성해주세요.
                 반말을 사용하면서도, 성숙하고 따듯한 말을 전해주세요.
                 """ + quotesContent + """
-                또한 이 명언을 참고해서 위에 제시된 명언을 자연스럽게 활용하여 현재에 대한 조언을 해주세요. 편지 내용에 명언을 포함할 
-                때에는 '위 명언처럼' 등과 같이 자연스럽게 작성되도록 해주세요.
+                또한 이 명언을 참고해서 위에 제시된 명언을 자연스럽게 활용하여 현재에 대한 조언을 해주세요.
+                편지 내용에 명언을 포함할 때에는 '위 명언처럼' 등과 같이 자연스럽게 작성되도록 해주세요.
+                편지의 마무리는 당신을 응원하는 친구가. 라는 내용으로 마무리 해주세요.
                 """;
 
-        Map<String, String> result = ragService.generateResponse(query, diarySummaryContents, "letter");
+        Map<String, String> result = ragService.generateResponse(query, diaryContents, "letter");
         String letterContent = result.get("response");
 
         if (!relevantQuotes.isEmpty()) {
@@ -105,10 +117,10 @@ public class LetterService {
     // 편지 조회
     @Transactional(readOnly = true)
     public CreateLetterResponse getLetter(Long letterCode) {
-
         Letter letter = letterRepository.findByLetterCode(letterCode)
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_LETTER_CODE));
 
         return CreateLetterResponse.from(letter);
     }
+
 }

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class CreateLetterResponse {
 
     private final Long letterCode;
-    private final Long diarySummaryCode;
+    private final Long diaryCode;
     private final String letterContents;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private final LocalDateTime createdAt;
@@ -21,7 +21,7 @@ public class CreateLetterResponse {
     public static CreateLetterResponse from(Letter letter) {
         return new CreateLetterResponse(
                 letter.getLetterCode(),
-                letter.getDiarySummaryCode(),
+                letter.getDiaryCode(),
                 letter.getLetterContents(),
                 letter.getCreatedAt()
         );

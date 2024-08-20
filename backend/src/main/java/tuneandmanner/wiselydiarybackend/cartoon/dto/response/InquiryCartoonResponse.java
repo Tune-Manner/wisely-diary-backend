@@ -12,4 +12,5 @@ public class InquiryCartoonResponse {
     private String cartoonPath;
     private LocalDateTime createdAt;
     private Long diarySummaryCode;
+    private String type;
 }

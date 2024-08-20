@@ -165,7 +165,7 @@ public class DiaryService {
         // 요청 JSON 생성
         JsonObject requestJson = new JsonObject();
 
-        requestJson.addProperty("model", "gpt-3.5-turbo"); // 사용하려는 모델명을 여기에 추가
+        requestJson.addProperty("model", "gpt-3.5-turbo");
         requestJson.addProperty("temperature", 0.7); // 텍스트 생성의 랜덤성을 조절하는 파라미터
 
         // 메시지 배열 생성
@@ -175,12 +175,12 @@ public class DiaryService {
         userMessage.addProperty("content", prompt);
         messagesArray.add(userMessage);
 
-        requestJson.add("messages", messagesArray); // messages 필드를 추가
+        requestJson.add("messages", messagesArray);
 
-        // GPT API로 POST 요청 보내기
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(openAiConfig.getApiKey()); // OpenAI API Key
+
 
 
         HttpEntity<String> entity = new HttpEntity<>(requestJson.toString(), headers);
@@ -197,7 +197,7 @@ public class DiaryService {
         }
     }
 
-    public void saveDiaryEntry(String diaryContent, String memberId, int emotionCode) {
+    public Long saveDiaryEntry(String diaryContent, String memberId, int emotionCode) {
         Diary diary = Diary.builder()
             .diaryContents(diaryContent)
             .memberId(memberId)
@@ -206,6 +206,7 @@ public class DiaryService {
             .diaryStatus("EXIST")
             .build();
 
-        diaryRepository.save(diary);
+        Diary savedDiary = diaryRepository.save(diary);
+        return savedDiary.getDiaryCode();  // 생성된 diaryCode를 반환
     }
 }
