@@ -21,26 +21,26 @@ public class Letter {
     private Long letterCode;
     @Column(name = "letter_contents", columnDefinition = "TEXT")
     private String letterContents;
-    @Column(name = "diary_summary_code")
-    private Long diarySummaryCode;
+    @Column(name = "diary_code")
+    private Long diaryCode;
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    private Letter(Long letterCode, String letterContents, LocalDateTime createdAt, Long diarySummaryCode) {
+    private Letter(Long letterCode, String letterContents, LocalDateTime createdAt, Long diaryCode) {
         this.letterCode = letterCode;
         this.letterContents = letterContents;
         this.createdAt = createdAt;
-        this.diarySummaryCode = diarySummaryCode;
+        this.diaryCode = diaryCode;
     }
 
     public static Letter of(
-            final Long letterCode, final String letterContents, final LocalDateTime createdAt, final Long diarySummaryCode
+            final Long letterCode, final String letterContents, final LocalDateTime createdAt, final Long diaryCode
             ) {
         return new Letter(
                 letterCode,
                 letterContents,
                 createdAt,
-                diarySummaryCode
+                diaryCode
         );
     }
 }
