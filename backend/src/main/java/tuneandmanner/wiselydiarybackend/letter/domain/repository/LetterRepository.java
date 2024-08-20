@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface LetterRepository extends JpaRepository<Letter, Long> {
     Optional<Letter> findByLetterCode(Long letterCode);
+    Optional<Letter> findByDiaryCode(Long diaryCode);
 }
