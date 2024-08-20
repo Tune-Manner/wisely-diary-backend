@@ -17,6 +17,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
+import tuneandmanner.wiselydiarybackend.auth.config.OpenAiConfig;
 import tuneandmanner.wiselydiarybackend.diary.domain.entity.Diary;
 import tuneandmanner.wiselydiarybackend.diary.domain.repository.DiaryRepository;
 import tuneandmanner.wiselydiarybackend.diary.dto.request.DiaryDetailRequest;
@@ -45,17 +46,23 @@ public class DiaryService {
     private final DiarySummaryRepository diarySummaryRepository;
     private final RAGService ragService;
 
-    @Value("${spring.ai.openai.api-key}")
-    private String openAiApiKey;
+//    @Value("${spring.ai.openai.api-key}")
+//    private String openAiApiKey;
+//
+//    @Value("${spring.ai.openai.urls.base-url}")
+//    private String openAiBaseUrl;
 
-    @Value("${spring.ai.openai.urls.base-url}")
-    private String openAiBaseUrl;
+    private final OpenAiConfig openAiConfig;
 
     @Autowired
-    public DiaryService(DiaryRepository diaryRepository, DiarySummaryRepository diarySummaryRepository, RAGService ragService) {
+    public DiaryService(DiaryRepository diaryRepository,
+                        DiarySummaryRepository diarySummaryRepository,
+                        RAGService ragService,
+                        OpenAiConfig openAiConfig) {
         this.diaryRepository = diaryRepository;
         this.diarySummaryRepository = diarySummaryRepository;
         this.ragService = ragService;
+        this.openAiConfig = openAiConfig;
     }
 
 //    /**
@@ -173,12 +180,12 @@ public class DiaryService {
         // GPT API로 POST 요청 보내기
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(openAiApiKey); // OpenAI API Key
+        headers.setBearerAuth(openAiConfig.getApiKey()); // OpenAI API Key
 
 
         HttpEntity<String> entity = new HttpEntity<>(requestJson.toString(), headers);
 
-        String API_URL = openAiBaseUrl + "/chat/completions";
+        String API_URL = "https://api.openai.com/v1/chat/completions";
 
         ResponseEntity<String> response = restTemplate.postForEntity(API_URL, entity, String.class);
 
