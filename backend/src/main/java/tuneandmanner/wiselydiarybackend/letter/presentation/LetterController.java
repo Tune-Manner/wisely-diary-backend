@@ -21,24 +21,19 @@ public class LetterController {
 
     private final LetterService letterService;
 
-    @PostMapping("/{diarySummaryCode}")
+    @PostMapping("/{diaryCode}")
     public ResponseEntity<Map<String, Object>> createLetter(@RequestBody @Valid CreateLetterRequest request) {
-        CreateLetterResponse response = letterService.createLetter(request.getDiarySummaryCode());
+        CreateLetterResponse response = letterService.createLetter(request.getDiaryCode());
 
         Map<String, Object> responseMap = new HashMap<>();
         responseMap.put("letterCode", response.getLetterCode());
-        responseMap.put("diarySummaryCode", response.getDiarySummaryCode());
+        responseMap.put("diaryCode", response.getDiaryCode());
         responseMap.put("letterContents", response.getLetterContents());
         responseMap.put("createdAt", response.getCreatedAt().toString());  // 문자열로 변환
 
         return ResponseEntity.created(URI.create("/api/letter/" + response.getLetterCode()))
                 .body(responseMap);
     }
-//    public ResponseEntity<CreateLetterResponse> createLetter(@RequestBody @Valid CreateLetterRequest request) {
-//        CreateLetterResponse response = letterService.createLetter(request.getDiarySummaryCode());
-//        return ResponseEntity.created(URI.create("/api/letter/" + response.getLetterCode()))
-//                .body(response);
-//    }
 
     @GetMapping("/{letterCode}")
     public ResponseEntity<CreateLetterResponse> getLetter(

@@ -8,8 +8,8 @@ import lombok.*;
 @AllArgsConstructor
 public class CreateLetterRequest {
 
-    private String diarySummaryContents;
-    private Long diarySummaryCode;
+    private String diaryContents;
+    private Long diaryCode;
     private Long emotionCode;
 
 }
