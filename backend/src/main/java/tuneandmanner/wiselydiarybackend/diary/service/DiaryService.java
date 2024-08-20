@@ -28,8 +28,11 @@ import tuneandmanner.wiselydiarybackend.rag.service.RAGService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -138,6 +141,7 @@ public class DiaryService {
         return result.get("response");
     }
 
+    // 선택한 날짜의 일기 하나 가져오기
     public DiaryDetailResponse getDiaryContents(DiaryDetailRequest request) {
         log.info("DiaryService.getDiaryContents - memberId: {}, date: {}", request.getMemberId(), request.getDate());
 
@@ -145,11 +149,34 @@ public class DiaryService {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
 
-        String diaryContents = diaryRepository.findByMemberIdAndCreatedAtBetween(request.getMemberId(), startOfDay, endOfDay)
-            .map(Diary::getDiaryContents)
-            .orElse("해당 날짜의 일기를 찾을 수 없습니다.");
+        return diaryRepository.findByMemberIdAndCreatedAtBetween(request.getMemberId(), startOfDay, endOfDay)
+                .map(diary -> new DiaryDetailResponse(
+                        diary.getCreatedAt().toLocalDate().toString(),
+                        diary.getDiaryContents()))
+                .orElse(new DiaryDetailResponse(
+                        request.getDate(),
+                        "해당 날짜의 일기를 찾을 수 없습니다."));
+    }
 
-        return new DiaryDetailResponse(diaryContents);
+    // 선택한 달의 일기 내용들 가져오기
+    public List<DiaryDetailResponse> getDiaryContentsbyMonth(DiaryDetailRequest request) {
+        log.info("DiaryService.getDiaryContentsbyMonth - memberId: {}, date: {}", request.getMemberId(), request.getDate());
+
+        LocalDate date = LocalDate.parse(request.getDate(), DateTimeFormatter.ISO_DATE);
+        LocalDateTime startOfMonth = date.withDayOfMonth(1).atStartOfDay();
+        LocalDateTime endOfMonth = date.withDayOfMonth(date.lengthOfMonth()).atTime(23, 59, 59);
+
+
+        List<Diary> diaries = diaryRepository.findByMemberIdAndCreatedAtBetweenAndDiaryStatusOrderByCreatedAtDesc(
+                request.getMemberId(), startOfMonth, endOfMonth, "EXIST");
+
+        List<DiaryDetailResponse> result = diaries.stream()
+                .map(diary -> new DiaryDetailResponse(
+                        diary.getCreatedAt().toLocalDate().toString(),
+                        diary.getDiaryContents()))
+                .collect(Collectors.toList());
+
+        return result;
     }
 
     public String generateDiaryEntry(String prompt) {

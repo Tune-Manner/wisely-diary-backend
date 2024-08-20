@@ -11,13 +11,19 @@ import java.util.Optional;
 
 @Repository
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
+
+    // 특정 사용자가 지정한 시간 범위 내에 작성한 일기를 조회
     Optional<Diary> findByDiaryCode(Long diaryCode);
 
     Optional<Diary> findByMemberIdAndCreatedAtBetween(String memberId, LocalDateTime start, LocalDateTime end);
 
+    // 특정 사용자가 지정한 시간 범위 내에서 상태가 특정 값인 일기들을 조회
     List<Diary> findByMemberIdAndCreatedAtBetweenAndDiaryStatus(String memberId, LocalDateTime startOfDay, LocalDateTime endOfDay, String exist);
 
-    // 새로운 메서드: 특정 기간 동안 특정 사용자의 모든 다이어리 항목을 리스트로 반환
+    // 특정 사용자가 지정한 시간 범위 내에서 작성한 모든 일기를 조회
     List<Diary> findAllByMemberIdAndCreatedAtBetween(String memberId, LocalDateTime start, LocalDateTime end);
 
+    // 특정 사용자가 지정한 시간 범위 내에서 상태가 특정 값인 일기들을 작성 날짜 기준 내림차순으로 조회
+    List<Diary> findByMemberIdAndCreatedAtBetweenAndDiaryStatusOrderByCreatedAtDesc(
+            String memberId, LocalDateTime startOfMonth, LocalDateTime endOfMonth, String status);
 }
