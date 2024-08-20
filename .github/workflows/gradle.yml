@@ -39,6 +39,11 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           SUPABASE_BUCKET: ${{ secrets.SUPABASE_BUCKET }}
+          AWS_ACCESS_KEY: $${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: $${{ secrets.AWS_SECRET_KEY }}
+          AWS_S3_BUCKET: $${{ secrets.AWS_S3_BUCKET }}
+          AWS_S3_REGION: $${{ secrets.AWS_S3_REGION }}
+          AWS_S3_ENDPOINT: $${{ secrets.AWS_S3_ENDPOINT }}
           # 다른 필요한 환경 변수들도 여기에 추가하세요
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
