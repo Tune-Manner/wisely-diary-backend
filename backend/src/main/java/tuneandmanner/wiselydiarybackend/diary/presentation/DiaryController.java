@@ -46,32 +46,47 @@ public class DiaryController {
     }
 
     @PostMapping("/generate")
-    public ResponseEntity<Map<String, String>> generateDiary(@RequestBody Map<String, String> request) {
+    public ResponseEntity<Map<String, Object>> generateDiary(@RequestBody Map<String, String> request) {
         String prompt = request.get("prompt");
         String memberId = request.get("memberId");
-        int emotionCode = Integer.parseInt(request.get("emotionCode"));
+        String emotionCodeStr = request.get("emotionCode");
+
+        if (prompt == null || memberId == null || emotionCodeStr == null) {
+            log.error("Missing required parameters");
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Missing required parameters");
+            return ResponseEntity.badRequest()
+                .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
+                .body((Map) errorResponse);
+        }
 
         try {
+            int emotionCode = Integer.parseInt(emotionCodeStr);
             String diaryEntry = diaryService.generateDiaryEntry(prompt);
-            diaryService.saveDiaryEntry(diaryEntry, memberId, emotionCode);
+            Long diaryCode = diaryService.saveDiaryEntry(diaryEntry, memberId, emotionCode);
 
-            Map<String, String> response = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
             response.put("diaryEntry", diaryEntry);
+            response.put("diaryCode", diaryCode);
 
-            // ResponseEntity에 Content-Type을 명시적으로 지정하여 UTF-8 인코딩 설정
+            log.info("Successfully generated and saved diary entry with diaryCode: {}", diaryCode);
             return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
                 .body(response);
+        } catch (NumberFormatException e) {
+            log.error("Invalid emotion code format", e);
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Invalid emotion code format");
+            return ResponseEntity.badRequest()
+                .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
+                .body((Map) errorResponse);
         } catch (Exception e) {
-            e.printStackTrace();
-
+            log.error("Failed to generate diary entry", e);
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Failed to generate diary entry: " + e.getMessage());
-
-            // 오류 응답에도 UTF-8 인코딩을 설정
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
-                .body(errorResponse);
+                .body((Map) errorResponse);
         }
     }
 
