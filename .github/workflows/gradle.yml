@@ -29,7 +29,7 @@ jobs:
         run: |
           echo "${{ secrets.APPLICATION_TEST_YML }}" | base64 --decode > src/main/resources/application-test.yml
       - name: Build and Test with Gradle
-        run: ./gradlew test -Dspring.profiles.active=test
+        run: ./gradlew test -Dspring.profiles.active=test -i
         env:
           SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
           SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
