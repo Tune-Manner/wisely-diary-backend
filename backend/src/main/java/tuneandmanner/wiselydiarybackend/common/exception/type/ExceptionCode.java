@@ -28,11 +28,14 @@ public enum ExceptionCode {
     // 404 Error
     NOT_FOUND_DIARY_CODE(404, "유효한 일기 코드가 아닙니다."),
     NOT_FOUND_TASK_ID(404, "유효한 음악 코드가 아닙니다."),
+    NOT_FOUND_SUMMARY_CODE(404, "유효한 요약 코드가 아닙니다."),
+    NOT_FOUND_CLIP_ID(404, "유효한 음악 코드가 아닙니다."),
     NOT_FOUND_LETTER_CODE(404, "유효한 편지 코드가 아닙니다."),
     NOT_FOUND_CLIP_URL(404, "클립 URL을 찾을 수 없습니다."),
 
     // 500 Error
     SERVER_ERROR(500, "서버 에러가 발생했습니다."),
+    FAILED_TO_GET_MUSIC_PLAYBACK(500, "음악 조회에 실패했습니다."),
     // Unknown Error
     UNKNOWN_ERROR(520, "알 수 없는 오류가 발생했습니다.");
 
