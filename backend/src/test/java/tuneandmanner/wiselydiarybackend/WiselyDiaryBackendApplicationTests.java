@@ -8,7 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest
+@SpringBootTest(classes = WiselyDiaryBackendApplication.class)
 @ActiveProfiles("test")
 class WiselyDiaryBackendApplicationTests {
 
