@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -143,4 +144,11 @@ public class EmotionService {
                 ));
     }
 
+    public Emotion selectEmotion(int emotionCode) {
+        return emotionRepository.findById(emotionCode).get();
+    }
+
+    public List<Emotion> selectAllEmotions() {
+        return emotionRepository.findAll();
+    }
 }
