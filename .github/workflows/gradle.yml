@@ -7,10 +7,8 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
     permissions:
       contents: read
-      
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
@@ -19,36 +17,33 @@ jobs:
           java-version: '17'
           distribution: 'corretto'
           cache: 'gradle'
-          
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-        
       - name: Create application.yml
         run: |
           mkdir -p src/main/resources
-          echo "${{ secrets.DB_YML }}" | base64 --decode > src/main/resources/application.yml
-      
+          echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
+      - name: Create application-test.yml
+        run: |
+          echo "${{ secrets.APPLICATION_TEST_YML }}" | base64 --decode > src/main/resources/application-test.yml
       - name: Build and Test with Gradle
-        run: ./gradlew test -Dspring.profiles.active=test -i
+        run: ./gradlew test -Dspring.profiles.active=test
         env:
           SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
           SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
           SPRING_AI_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          
+          # 다른 필요한 환경 변수들도 여기에 추가하세요
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: Package
           path: build/libs
-          
   dependency-submission:
     needs: build-and-test
     runs-on: ubuntu-latest
-    
     permissions:
       contents: write
     steps:
