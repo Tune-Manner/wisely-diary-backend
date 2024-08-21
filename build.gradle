@@ -48,6 +48,9 @@ dependencies {
 //    implementation 'com.harium.supabase:core:0.0.1'
     implementation platform('software.amazon.awssdk:bom:2.20.56')
     implementation 'software.amazon.awssdk:s3'
+
+    // https://mvnrepository.com/artifact/org.modelmapper/modelmapper
+    implementation 'org.modelmapper:modelmapper:3.1.1'
 }
 
 dependencyManagement {
