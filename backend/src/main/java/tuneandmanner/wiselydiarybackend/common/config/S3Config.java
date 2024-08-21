@@ -14,28 +14,23 @@ import java.net.URI;
 @Configuration
 public class S3Config {
 
-    @Value("${supabase.url}")
-    private String supabaseUrl;
+    private final AwsProperties awsProperties;
 
-    @Value("${aws.accessKey}")
-    private String supabaseKey;
-
-    @Value("${aws.secretKey}")
-    private String supabaseSecret;
-
-    @Value("${supabase.bucket}")
-    private String bucketName;
+    public S3Config(AwsProperties awsProperties) {
+        this.awsProperties = awsProperties;
+    }
 
     @Bean
     public S3Client s3Client() {
-        AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(supabaseKey, supabaseSecret);
-
-        String endpoint = supabaseUrl + "/storage/v1/s3";
+        AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(
+                awsProperties.getAccessKey(),
+                awsProperties.getSecretKey()
+        );
 
         return S3Client.builder()
                 .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-                .endpointOverride(URI.create(endpoint))
-                .region(Region.AP_NORTHEAST_2) // 임의의 리전, Supabase에서는 무시됨
+                .endpointOverride(URI.create(awsProperties.getS3().getEndpoint()))
+                .region(Region.of(awsProperties.getS3().getRegion()))
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
                         .build())

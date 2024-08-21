@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import tuneandmanner.wiselydiarybackend.stt.dto.WhisperTranscriptionResponse;
 import tuneandmanner.wiselydiarybackend.auth.config.OpenAIClientConfig;
 
-@FeignClient(name = "openai-service", url = "${spring.ai.openai.urls.base-url}", configuration = OpenAIClientConfig.class)
+@FeignClient(name = "openai-service", url = "https://api.openai.com/v1", configuration = OpenAIClientConfig.class)
 public interface OpenAIClient {
 
 	@PostMapping(value = "${spring.ai.openai.urls.create-transcription-url}", consumes = "multipart/form-data")
