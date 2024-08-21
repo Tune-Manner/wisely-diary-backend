@@ -9,6 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 public class DiaryDetailResponse {
+    private Long diaryCode;
     private String date;
     private String diaryContents;
 }

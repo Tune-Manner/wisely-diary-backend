@@ -1,8 +1,11 @@
 package tuneandmanner.wiselydiarybackend.diary.service;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 import tuneandmanner.wiselydiarybackend.diary.domain.entity.Diary;
 import tuneandmanner.wiselydiarybackend.diary.domain.repository.DiaryRepository;
 import tuneandmanner.wiselydiarybackend.diary.dto.request.DiaryDetailRequest;
+import tuneandmanner.wiselydiarybackend.diary.dto.request.ModifyDiaryContentRequestDTO;
 import tuneandmanner.wiselydiarybackend.diary.dto.response.DiaryDetailResponse;
+import tuneandmanner.wiselydiarybackend.diary.dto.response.ModifyContentResponseDTO;
 import tuneandmanner.wiselydiarybackend.diarysummary.domain.DiarySummary;
 import tuneandmanner.wiselydiarybackend.diarysummary.repository.DiarySummaryRepository;
 import tuneandmanner.wiselydiarybackend.rag.service.RAGService;
@@ -44,6 +49,7 @@ public class DiaryService {
 
     private static final Logger logger = LoggerFactory.getLogger(DiaryService.class);
 
+    private final ModelMapper modelMapper;
     private final DiaryRepository diaryRepository;
     private final DiarySummaryRepository diarySummaryRepository;
     private final RAGService ragService;
@@ -55,8 +61,9 @@ public class DiaryService {
     private String openAiBaseUrl;
 
     @Autowired
-    public DiaryService(DiaryRepository diaryRepository, DiarySummaryRepository diarySummaryRepository, RAGService ragService) {
-        this.diaryRepository = diaryRepository;
+    public DiaryService(ModelMapper modelMapper, DiaryRepository diaryRepository, DiarySummaryRepository diarySummaryRepository, RAGService ragService) {
+		this.modelMapper = modelMapper;
+		this.diaryRepository = diaryRepository;
         this.diarySummaryRepository = diarySummaryRepository;
         this.ragService = ragService;
     }
@@ -150,12 +157,15 @@ public class DiaryService {
         LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
 
         return diaryRepository.findByMemberIdAndCreatedAtBetween(request.getMemberId(), startOfDay, endOfDay)
-                .map(diary -> new DiaryDetailResponse(
-                        diary.getCreatedAt().toLocalDate().toString(),
-                        diary.getDiaryContents()))
-                .orElse(new DiaryDetailResponse(
-                        request.getDate(),
-                        "해당 날짜의 일기를 찾을 수 없습니다."));
+            .map(diary -> new DiaryDetailResponse(
+                diary.getDiaryCode(), // 추가된 diaryCode
+                diary.getCreatedAt().toLocalDate().toString(),
+                diary.getDiaryContents()
+            ))
+            .orElse(new DiaryDetailResponse(
+                null, // 일기를 찾을 수 없는 경우 diaryCode를 null로 설정
+                request.getDate(),
+                "해당 날짜의 일기를 찾을 수 없습니다."));
     }
 
     // 선택한 달의 일기 내용들 가져오기
@@ -166,17 +176,15 @@ public class DiaryService {
         LocalDateTime startOfMonth = date.withDayOfMonth(1).atStartOfDay();
         LocalDateTime endOfMonth = date.withDayOfMonth(date.lengthOfMonth()).atTime(23, 59, 59);
 
-
         List<Diary> diaries = diaryRepository.findByMemberIdAndCreatedAtBetweenAndDiaryStatusOrderByCreatedAtDesc(
-                request.getMemberId(), startOfMonth, endOfMonth, "EXIST");
+            request.getMemberId(), startOfMonth, endOfMonth, "EXIST");
 
-        List<DiaryDetailResponse> result = diaries.stream()
-                .map(diary -> new DiaryDetailResponse(
-                        diary.getCreatedAt().toLocalDate().toString(),
-                        diary.getDiaryContents()))
-                .collect(Collectors.toList());
-
-        return result;
+        return diaries.stream()
+            .map(diary -> new DiaryDetailResponse(
+                diary.getDiaryCode(), // 추가된 diaryCode
+                diary.getCreatedAt().toLocalDate().toString(),
+                diary.getDiaryContents()))
+            .collect(Collectors.toList());
     }
 
     public String generateDiaryEntry(String prompt) {
@@ -227,5 +235,19 @@ public class DiaryService {
 
         Diary savedDiary = diaryRepository.save(diary);
         return savedDiary.getDiaryCode();  // 생성된 diaryCode를 반환
+    }
+
+    @Transactional
+    public ModifyContentResponseDTO modifyDiaryContent(ModifyDiaryContentRequestDTO modifyDiaryContentRequestDTO) {
+        // 다이어리 조회
+        Diary diary = diaryRepository.findByDiaryCode(modifyDiaryContentRequestDTO.getDiaryCode())
+            .orElseThrow(() -> new EntityNotFoundException("exception.data.entityNotFound"));
+
+        // 다이어리 내용 업데이트
+        diary.setDiaryContents(modifyDiaryContentRequestDTO.getDiaryContent());
+        Diary updatedDiary = diaryRepository.save(diary);
+
+        // 수정된 내용을 DTO로 변환하여 반환
+        return modelMapper.map(updatedDiary, ModifyContentResponseDTO.class);
     }
 }
