@@ -74,10 +74,17 @@ jobs:
         run: |
           set -e  # 스크립트 실행 중 오류 발생 시 즉시 중단
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key  # 비밀키 파일 생성 및 권한 설정
-          # JAR 파일을 EC2로 전송
+          
+          # JAR 파일과 application.yml 파일을 EC2로 전송
           scp -i private_key -o StrictHostKeyChecking=no build/libs/WiselyDiaryBackend-0.0.1-SNAPSHOT.jar ${USER}@${HOST}:~/application.jar
+          scp -i private_key -o StrictHostKeyChecking=no src/main/resources/application.yml ${USER}@${HOST}:~/application.yml
+          
           # EC2에 SSH 접속하여 애플리케이션 배포 및 실행
           ssh -i private_key -o StrictHostKeyChecking=no ${USER}@${HOST} '
+            sudo systemctl stop wisely-diary.service || true
+            sudo mv ~/application.jar /opt/wisely-diary/
+            sudo mv ~/application.yml /opt/wisely-diary/
+          
             # 기존 Java 애플리케이션 중지
             sudo systemctl stop wisely-diary.service || true
           
