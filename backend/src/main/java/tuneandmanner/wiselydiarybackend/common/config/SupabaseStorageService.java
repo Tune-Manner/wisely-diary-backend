@@ -15,19 +15,22 @@ import java.util.UUID;
 @Service
 public class SupabaseStorageService {
 
-    @Value("${supabase.url}")
-    private String supabaseUrl;
+//    @Value("${supabase.url}")
+    private final String supabaseUrl;
 
-    @Value("${supabase.key}")
-    private String supabaseKey;
+//    @Value("${supabase.key}")
+    private final String supabaseKey;
 
-    @Value("${supabase.bucket}")
-    private String bucketName;
+//    @Value("${supabase.bucket}")
+    private final String bucketName;
 
     private final RestTemplate restTemplate;
 
-    public SupabaseStorageService(RestTemplate restTemplate) {
+    public SupabaseStorageService(RestTemplate restTemplate, SupabaseProperties supabaseProperties) {
         this.restTemplate = restTemplate;
+        this.supabaseUrl = supabaseProperties.getUrl();
+        this.supabaseKey = supabaseProperties.getKey();
+        this.bucketName = supabaseProperties.getBucket();
     }
 
     public String uploadImage(String localImagePath) {

@@ -12,7 +12,8 @@ public class OpenAIClientConfig {
 	@Value("${spring.ai.openai.api-key}")
 	private String apiKey;
 
-	@Value("${spring.ai.openai.audio-model}")
+//	@Value("${spring.ai.openai.audio-model}")
+	@Value("whisper-1")
 	private String audioModel;
 
 	@Bean
