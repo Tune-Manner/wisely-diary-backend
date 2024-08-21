@@ -11,6 +11,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest  # 최신 Ubuntu 환경에서 실행
     steps:
+
       # 1. 코드 체크아웃
       - uses: actions/checkout@v4  # 현재 레포지토리의 코드를 가져옴
 
