@@ -1,0 +1,95 @@
+name: CD with Gradle and AWS EC2
+
+on:
+  push:
+    branches: [ "main", "dev", "setup/github-actions" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Create application.yml
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
+
+      - name: Gradle 빌드
+        run: ./gradlew clean build
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          SPRING_AI_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_BUCKET: ${{ secrets.SUPABASE_BUCKET }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+          AWS_S3_ENDPOINT: ${{ secrets.AWS_S3_ENDPOINT }}
+
+      - name: 현재 시간 가져오기
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH-mm-ss
+          utcOffset: "+09:00"
+
+      - name: 현재 시간 출력
+        run: echo "현재 시간=${{steps.current-time.outputs.formattedTime}}"
+        shell: bash
+
+      - name: Deploy to EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          set -e
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          scp -i private_key -o StrictHostKeyChecking=no build/libs/WiselyDiaryBackend-0.0.1-SNAPSHOT.jar ${USER}@${HOST}:~/application.jar
+          ssh -i private_key -o StrictHostKeyChecking=no ${USER}@${HOST} '
+            # Java 애플리케이션 중지
+            sudo systemctl stop wisely-diary.service || true
+          
+            # 애플리케이션 JAR 파일 업데이트
+            sudo mv ~/application.jar /opt/wisely-diary/
+          
+            # Java 애플리케이션 시작
+            sudo systemctl start wisely-diary.service
+          
+            # 서비스 상태 확인 및 로그 저장
+            sudo systemctl status wisely-diary.service > ~/deploy_status.log
+            sudo journalctl -u wisely-diary.service -n 50 > ~/deploy_log.log
+          '
+          
+      - name: Fetch deployment logs
+        if: always()
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          scp -i private_key -o StrictHostKeyChecking=no ${USER}@${HOST}:~/deploy_*.log ./
+          
+      - name: Upload deployment logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-logs
+          path: deploy_*.log
