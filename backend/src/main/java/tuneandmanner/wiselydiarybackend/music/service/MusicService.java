@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tuneandmanner.wiselydiarybackend.common.exception.NotFoundException;
 import tuneandmanner.wiselydiarybackend.common.exception.ServerInternalException;
 import tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode;
-import tuneandmanner.wiselydiarybackend.diarysummary.domain.DiarySummary;
-import tuneandmanner.wiselydiarybackend.diarysummary.repository.DiarySummaryRepository;
+import tuneandmanner.wiselydiarybackend.diary.domain.entity.Diary;
+import tuneandmanner.wiselydiarybackend.diary.domain.repository.DiaryRepository;
 import tuneandmanner.wiselydiarybackend.music.domain.entity.Music;
 import tuneandmanner.wiselydiarybackend.music.domain.repository.MusicRepository;
 import tuneandmanner.wiselydiarybackend.music.dto.response.CreateMusicResponse;
@@ -22,8 +22,9 @@ import tuneandmanner.wiselydiarybackend.rag.service.OpenAIService;
 
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
-import static tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode.NOT_FOUND_SUMMARY_CODE;
+import static tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode.*;
 
 
 @Slf4j
@@ -32,18 +33,37 @@ import static tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCo
 public class MusicService {
 
     private final MusicRepository musicRepository;
-    private final DiarySummaryRepository diarySummaryRepository;
+    private final DiaryRepository diaryRepository;
     private final SunoApiService sunoApiService;
     private final OpenAIService openAIService;
 
-    public CreateMusicResponse createSongPrompt(CreateMusicRequest request) {
+    @Transactional
+    public MusicPlaybackResponse getOrCreateMusicPlayback(Long diaryCode) {
 
-        DiarySummary diarySummary = diarySummaryRepository.findByDiarySummaryCode(request.getDiarySummaryCode())
-                .orElseThrow(() -> new NotFoundException(NOT_FOUND_SUMMARY_CODE));
+        // 1. 먼저 해당 diaryCode에 대한 음악이 이미 존재하는지 확인
+        Optional<Music> existingMusic = musicRepository.findByDiaryCode(diaryCode);
+
+        Music music;
+        if (existingMusic.isPresent()) {
+            music = existingMusic.get();
+            log.info("Existing music found for diaryCode: {}", diaryCode);
+        } else {
+            log.info("No existing music found for diaryCode: {}. Creating new music.", diaryCode);
+            CreateMusicResponse createResponse = createSongPrompt(new CreateMusicRequest(diaryCode));
+            music = musicRepository.findByClipId(createResponse.getId())
+                    .orElseThrow(() -> new NotFoundException(NOT_FOUND_CLIP_ID));
+        }
+
+        return getMusicPlayback(music.getMusicCode());
+    }
+
+    public CreateMusicResponse createSongPrompt(CreateMusicRequest request) {
+        Diary diary = diaryRepository.findByDiaryCode(request.getDiaryCode())
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_DIARY_CODE));
 
         // 1. 가사 생성
-        String diarySummaryContents = diarySummary.getDiarySummaryContents();
-        LyricsGenerationResult result = generateLyricsAndMetadata(diarySummaryContents);
+        String diaryContents = diary.getDiaryContents();
+        LyricsGenerationResult result = generateLyricsAndMetadata(diaryContents);
 
         // 2. Suno API 호출
         SunoApiRequest sunoRequest = new SunoApiRequest(result.getLyrics(), result.getTags(), result.getTitle());
@@ -51,13 +71,13 @@ public class MusicService {
 
         // 3. Music 엔티티 저장
         LocalDateTime createdAt = LocalDateTime.now();
-        saveMusicEntity("", result.getTitle(), result.getLyrics(), createdAt, response.getId(), request.getDiarySummaryCode());
+        saveMusicEntity(result.getTitle(), result.getLyrics(), createdAt, response.getId(), request.getDiaryCode());
 
-        // 4. id 반환
+        // 4. response 반환
         return response;
     }
 
-    private LyricsGenerationResult generateLyricsAndMetadata(String diarySummary) {
+    private LyricsGenerationResult generateLyricsAndMetadata(String diaryContents) {
         String openAIPrompt = String.format(
                 "당신은 작사가입니다. 당신은 감성적이고 위로가 되는 가사를 만들 수 있습니다." +
                 "일기 요약을 참고하여 가사를 생성해주세요." +
@@ -72,7 +92,7 @@ public class MusicService {
                 "제목: [노래 제목]\n" +
                 "장르: [콤마로 구분된 태그들]\n" +
                 "가사:\n[노래 가사]",
-                diarySummary
+                diaryContents
         );
 
         Prompt promptContent = new Prompt(openAIPrompt);
@@ -90,35 +110,42 @@ public class MusicService {
     }
 
     @Transactional
-    protected void saveMusicEntity(String musicPath, String title, String lyrics, LocalDateTime createdAt, String clipId, Long diarySummaryCode) {
-        Music music = Music.create(musicPath, title, lyrics, createdAt, clipId, diarySummaryCode);
+    protected void saveMusicEntity(String title, String lyrics, LocalDateTime createdAt, String clipId, Long diaryCode) {
+        Music music = Music.create(null, title, lyrics, createdAt, clipId, diaryCode);
         musicRepository.save(music);
     }
 
+    @Transactional
     public MusicPlaybackResponse getMusicPlayback(Long musicCode) {
-
         Music music = musicRepository.findByMusicCode(musicCode)
                 .orElseThrow(() -> {
                     log.error("Music not found for musicCode: {}", musicCode);
-                    return new NotFoundException(ExceptionCode.NOT_FOUND_CLIP_ID);
+                    return new NotFoundException(NOT_FOUND_CLIP_ID);
                 });
 
         String clipId = music.getClipId();
 
         if (clipId == null || clipId.isEmpty()) {
             log.error("ClipId not found for musicCode: {}", musicCode);
-            throw new NotFoundException(ExceptionCode.NOT_FOUND_CLIP_ID);
+            throw new NotFoundException(NOT_FOUND_CLIP_ID);
         }
 
         try {
             SunoClipResponse clipResponse = sunoApiService.getClipResponse(clipId);
-
             SunoClipResponse.Clip firstClip = clipResponse.getClips().get(0);
-            log.debug("First Clip details for musicCode {}: {}", musicCode, firstClip);
 
-            if (firstClip.getVideoUrl() == null && firstClip.getAudioUrl() == null) {
-                log.error("No video or audio URL found in clip for musicCode: {}", musicCode);
-                throw new NotFoundException(ExceptionCode.NOT_FOUND_CLIP_URL);
+            log.info("First Clip: {}", firstClip);
+            log.info("Video URL: {}", firstClip.getVideoUrl());
+            log.info("Current Music Path: {}", music.getMusicPath());
+
+            if (firstClip.getVideoUrl() != null && !firstClip.getVideoUrl().isEmpty()
+                    && (music.getMusicPath() == null || music.getMusicPath().isEmpty())) {
+                log.info("Updating music path...");
+                music.updateMusicPath(firstClip.getVideoUrl());
+                Music savedMusic = musicRepository.save(music);
+                log.info("Updated Music: {}", savedMusic);
+            } else {
+                log.info("Not updating music path. Condition not met.");
             }
 
             return MusicPlaybackResponse.of(
@@ -127,7 +154,7 @@ public class MusicService {
                     music.getMusicLyrics(),
                     clipResponse,
                     music.getCreatedAt(),
-                    music.getDiarySummaryCode()
+                    music.getDiaryCode()
             );
 
         } catch (Exception e) {

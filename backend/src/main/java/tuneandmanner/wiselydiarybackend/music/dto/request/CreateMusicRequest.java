@@ -8,6 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 public class CreateMusicRequest {
 
-    private Long diarySummaryCode;
+    private Long diaryCode;
 
 }
