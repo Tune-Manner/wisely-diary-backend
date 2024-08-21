@@ -59,7 +59,7 @@ public class CartoonService {
     private final VectorStoreService vectorStoreService;
     private final SupabaseStorageService supabaseStorageService;
 
-    @Value("${image.storage.path}")  // YML에서 설정한 경로를 주입
+    @Value("C:\\00_ILGI\\backend\\backend\\src\\main\\resources\\cartoonImage")  // YML에서 설정한 경로를 주입
     private String imagePath;
 
     private String uploadImageToSupabase(String localImagePath) {
