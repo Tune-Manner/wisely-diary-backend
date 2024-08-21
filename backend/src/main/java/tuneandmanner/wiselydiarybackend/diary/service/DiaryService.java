@@ -148,7 +148,6 @@ public class DiaryService {
         return result.get("response");
     }
 
-    // 선택한 날짜의 일기 하나 가져오기
     public DiaryDetailResponse getDiaryContents(DiaryDetailRequest request) {
         log.info("DiaryService.getDiaryContents - memberId: {}, date: {}", request.getMemberId(), request.getDate());
 
@@ -163,12 +162,11 @@ public class DiaryService {
                 diary.getDiaryContents()
             ))
             .orElse(new DiaryDetailResponse(
-                null, // 일기를 찾을 수 없는 경우 diaryCode를 null로 설정
+                null,
                 request.getDate(),
                 "해당 날짜의 일기를 찾을 수 없습니다."));
     }
 
-    // 선택한 달의 일기 내용들 가져오기
     public List<DiaryDetailResponse> getDiaryContentsbyMonth(DiaryDetailRequest request) {
         log.info("DiaryService.getDiaryContentsbyMonth - memberId: {}, date: {}", request.getMemberId(), request.getDate());
 
@@ -190,13 +188,11 @@ public class DiaryService {
     public String generateDiaryEntry(String prompt) {
         RestTemplate restTemplate = new RestTemplate();
 
-        // 요청 JSON 생성
         JsonObject requestJson = new JsonObject();
 
         requestJson.addProperty("model", "gpt-3.5-turbo");
         requestJson.addProperty("temperature", 0.7); // 텍스트 생성의 랜덤성을 조절하는 파라미터
 
-        // 메시지 배열 생성
         JsonArray messagesArray = new JsonArray();
         JsonObject userMessage = new JsonObject();
         userMessage.addProperty("role", "user");
@@ -234,20 +230,23 @@ public class DiaryService {
             .build();
 
         Diary savedDiary = diaryRepository.save(diary);
-        return savedDiary.getDiaryCode();  // 생성된 diaryCode를 반환
+        return savedDiary.getDiaryCode();
     }
 
     @Transactional
     public ModifyContentResponseDTO modifyDiaryContent(ModifyDiaryContentRequestDTO modifyDiaryContentRequestDTO) {
-        // 다이어리 조회
+
         Diary diary = diaryRepository.findByDiaryCode(modifyDiaryContentRequestDTO.getDiaryCode())
             .orElseThrow(() -> new EntityNotFoundException("exception.data.entityNotFound"));
 
-        // 다이어리 내용 업데이트
-        diary.setDiaryContents(modifyDiaryContentRequestDTO.getDiaryContent());
-        Diary updatedDiary = diaryRepository.save(diary);
+        Diary updatedDiary = diary.toBuilder()
+            .diaryContents(modifyDiaryContentRequestDTO.getDiaryContent())
+            .updatedAt(LocalDateTime.now())
+            .build();
 
-        // 수정된 내용을 DTO로 변환하여 반환
+        updatedDiary = diaryRepository.save(updatedDiary);
+
         return modelMapper.map(updatedDiary, ModifyContentResponseDTO.class);
     }
+
 }
