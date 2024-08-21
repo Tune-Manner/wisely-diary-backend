@@ -11,14 +11,18 @@ import tuneandmanner.wiselydiarybackend.diary.domain.repository.DiaryRepository;
 import tuneandmanner.wiselydiarybackend.letter.domain.entity.Letter;
 import tuneandmanner.wiselydiarybackend.letter.domain.repository.LetterRepository;
 import tuneandmanner.wiselydiarybackend.letter.dto.response.CreateLetterResponse;
+import tuneandmanner.wiselydiarybackend.letter.dto.response.InquiryLetterResponse;
 import tuneandmanner.wiselydiarybackend.rag.service.RAGService;
 import tuneandmanner.wiselydiarybackend.rag.service.VectorStoreService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode.*;
 
@@ -123,4 +127,33 @@ public class LetterService {
         return CreateLetterResponse.from(letter);
     }
 
+    public List<InquiryLetterResponse> inquiryLetter(LocalDate date, String memberId) {
+        log.info("LetterService.inquiryLetter for date: {} and memberId: {}", date, memberId);
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        List<Diary> diaries = diaryRepository.findByMemberIdAndCreatedAtBetweenAndDiaryStatus(
+                memberId, startOfDay, endOfDay, "EXIST");
+
+        if (diaries.isEmpty()) {
+            log.info("No diaries found for the given date and member");
+            return Collections.emptyList();
+        }
+
+        List<Long> diaryCodes = diaries.stream()
+                .map(Diary::getDiaryCode)
+                .collect(Collectors.toList());
+
+        List<Letter> letters = letterRepository.findByDiaryCodeInAndCreatedAtBetween(
+                diaryCodes, startOfDay, endOfDay);
+
+        return letters.stream()
+                .map(letter -> new InquiryLetterResponse(
+                        letter.getLetterCode(),
+                        letter.getLetterContents(),
+                        letter.getCreatedAt(),
+                        letter.getDiaryCode()))
+                .collect(Collectors.toList());
+    }
 }
