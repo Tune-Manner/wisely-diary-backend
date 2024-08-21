@@ -2,14 +2,13 @@ name: CD with Gradle and AWS EC2
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main", "dev", "setup/github-actions" ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Code Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -24,13 +23,18 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
 
+      - name: Verify build success
+        run: |
+          if [ ! -f build/libs/*.jar ]; then
+            echo "Build failed: .jar file not found"
+            exit 1
+          fi
+
       - name: Generate deployment package
         run: |
           mkdir -p deploy
           cp build/libs/*.jar deploy/application.jar
           cp Procfile deploy/Procfile
-          cp -r .ebextensions deploy/.ebextensions
-          cp -r .platform deploy/.platform
           cd deploy && zip -r deploy.zip .
 
       - name: Deploy to EC2
@@ -39,11 +43,14 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER }}
         run: |
+          set -e
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           scp -o StrictHostKeyChecking=no -i private_key ./deploy/deploy.zip ${USER}@${HOST}:~/
           ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
+            sudo systemctl stop wisely-diary.service || true
+            rm -rf ~/app/*
             unzip -o ~/deploy.zip -d ~/app
-            sudo systemctl stop wisely-diary.service
             sudo cp ~/app/application.jar /opt/wisely-diary/
             sudo systemctl start wisely-diary.service
+            sudo systemctl status wisely-diary.service
           '
