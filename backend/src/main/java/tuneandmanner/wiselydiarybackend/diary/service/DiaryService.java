@@ -64,9 +64,6 @@ public class DiaryService {
     private final OpenAiConfig openAiConfig;
 
     @Autowired
-    public DiaryService(ModelMapper modelMapper, DiaryRepository diaryRepository, DiarySummaryRepository diarySummaryRepository, RAGService ragService) {
-		this.modelMapper = modelMapper;
-		this.diaryRepository = diaryRepository;
     public DiaryService(ModelMapper modelMapper,
                         DiaryRepository diaryRepository,
                         DiarySummaryRepository diarySummaryRepository,
