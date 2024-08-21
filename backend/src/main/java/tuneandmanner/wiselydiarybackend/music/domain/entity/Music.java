@@ -29,19 +29,23 @@ public class Music {
     private String musicLyrics;
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-    private Long diarySummaryCode;
+    private Long diaryCode;
     private String clipId;
 
-    public Music(String musicPath, String musicTitle, String musicLyrics, LocalDateTime createdAt, String clipId, Long diarySummaryCode) {
+    public Music(String musicPath, String musicTitle, String musicLyrics, LocalDateTime createdAt, String clipId, Long diaryCode) {
         this.musicPath = musicPath;
         this.musicTitle = musicTitle;
         this.musicLyrics = musicLyrics;
         this.createdAt = createdAt;
         this.clipId = clipId;
-        this.diarySummaryCode = diarySummaryCode;
+        this.diaryCode = diaryCode;
     }
 
-    public static Music create(String musicPath, String title, String lyrics, LocalDateTime createdAt, String clipId, Long diarySummaryCode) {
-        return new Music(musicPath, title, lyrics, createdAt, clipId, diarySummaryCode);
+    public static Music create(String musicPath, String title, String lyrics, LocalDateTime createdAt, String clipId, Long diaryCode) {
+        return new Music(musicPath, title, lyrics, createdAt, clipId, diaryCode);
+    }
+
+    public void updateMusicPath(String musicPath) {
+        this.musicPath = musicPath;
     }
 }
