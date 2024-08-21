@@ -12,17 +12,19 @@ import tuneandmanner.wiselydiarybackend.diary.domain.entity.Diary;
 import tuneandmanner.wiselydiarybackend.diary.domain.repository.DiaryRepository;
 import tuneandmanner.wiselydiarybackend.music.domain.entity.Music;
 import tuneandmanner.wiselydiarybackend.music.domain.repository.MusicRepository;
-import tuneandmanner.wiselydiarybackend.music.dto.response.CreateMusicResponse;
-import tuneandmanner.wiselydiarybackend.music.dto.response.LyricsGenerationResult;
-import tuneandmanner.wiselydiarybackend.music.dto.response.MusicPlaybackResponse;
-import tuneandmanner.wiselydiarybackend.music.dto.response.SunoClipResponse;
+import tuneandmanner.wiselydiarybackend.music.dto.response.*;
 import tuneandmanner.wiselydiarybackend.music.dto.request.CreateMusicRequest;
 import tuneandmanner.wiselydiarybackend.music.dto.request.SunoApiRequest;
 import tuneandmanner.wiselydiarybackend.rag.service.OpenAIService;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static tuneandmanner.wiselydiarybackend.common.exception.type.ExceptionCode.*;
 
@@ -163,4 +165,36 @@ public class MusicService {
         }
     }
 
+    public List<InquiryMusicResponse> getMusicInfo(LocalDate date, String memberId) {
+        log.info("MusicService.getMusicInfo for date: {} and memberId: {}", date, memberId);
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        List<Diary> diaries = diaryRepository.findByMemberIdAndCreatedAtBetweenAndDiaryStatus(
+                memberId, startOfDay, endOfDay, "EXIST");
+
+        log.info("Found diaries: {}", diaries);
+        if (diaries.isEmpty()) {
+            log.info("No diaries found for the given date and member");
+            return Collections.emptyList();
+        }
+
+        List<Long> diaryCodes = diaries.stream()
+                .map(Diary::getDiaryCode)
+                .collect(Collectors.toList());
+
+        List<Music> musics = musicRepository.findByDiaryCodeInAndCreatedAtBetween(
+                diaryCodes, startOfDay, endOfDay);
+
+        return musics.stream()
+                .map(music -> new InquiryMusicResponse(
+                        music.getMusicCode(),
+                        music.getMusicTitle(),
+                        music.getMusicLyrics(),
+                        music.getMusicPath(),
+                        music.getCreatedAt(),
+                        music.getDiaryCode()))
+                .collect(Collectors.toList());
+    }
 }

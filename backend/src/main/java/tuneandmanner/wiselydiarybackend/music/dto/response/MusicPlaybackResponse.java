@@ -23,10 +23,10 @@ public class MusicPlaybackResponse {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private final LocalDateTime createdAt;
-    private final Long diarySummaryCode;
+    private final Long diaryCode;
 
     public static MusicPlaybackResponse of(Long musicCode, String musicTitle, String musicLyrics,
-                                           SunoClipResponse clipResponse, LocalDateTime createdAt, Long diarySummaryCode) {
-        return new MusicPlaybackResponse(musicCode, musicTitle, musicLyrics, clipResponse, createdAt, diarySummaryCode);
+                                           SunoClipResponse clipResponse, LocalDateTime createdAt, Long diaryCode) {
+        return new MusicPlaybackResponse(musicCode, musicTitle, musicLyrics, clipResponse, createdAt, diaryCode);
     }
 }
