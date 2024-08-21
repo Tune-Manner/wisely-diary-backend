@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.*;
 
 import lombok.extern.slf4j.Slf4j;
 import tuneandmanner.wiselydiarybackend.diary.dto.request.DiaryDetailRequest;
+import tuneandmanner.wiselydiarybackend.diary.dto.request.ModifyDiaryContentRequestDTO;
 import tuneandmanner.wiselydiarybackend.diary.dto.response.DiaryDetailResponse;
+import tuneandmanner.wiselydiarybackend.diary.dto.response.ModifyContentResponseDTO;
 import tuneandmanner.wiselydiarybackend.diary.service.DiaryService;
 
 import java.util.HashMap;
@@ -105,5 +107,27 @@ public class DiaryController {
         }
     }
 
+    @PutMapping("/modify/{diaryCode}")
+    public ResponseEntity<ModifyContentResponseDTO> modifyDiaryContent(
+        @PathVariable Long diaryCode,
+        @RequestBody ModifyDiaryContentRequestDTO modifyDiaryContentRequestDTO) {
+
+        // Request DTO에 다이어리 코드 설정
+        modifyDiaryContentRequestDTO.setDiaryCode(diaryCode);
+
+        // 서비스에서 일기 내용 수정 처리
+        ModifyContentResponseDTO responseModifyContent = diaryService.modifyDiaryContent(modifyDiaryContentRequestDTO);
+
+        // 수정된 일기 내용 응답
+        if (responseModifyContent != null) {
+            return ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON_UTF8)
+                .body(responseModifyContent);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
+                .body(null);
+        }
+    }
 }
 
