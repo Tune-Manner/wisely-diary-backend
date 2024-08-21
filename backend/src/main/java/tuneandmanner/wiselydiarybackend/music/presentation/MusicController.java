@@ -17,6 +17,13 @@ public class MusicController {
 
     private final MusicService musicService;
 
+    @GetMapping("/check/{diaryCode}")
+    public ResponseEntity<MusicPlaybackResponse> getOrCreateMusicPlayback(@PathVariable Long diaryCode) {
+        MusicPlaybackResponse response = musicService.getOrCreateMusicPlayback(diaryCode);
+        return ResponseEntity.ok(response);
+    }
+
+    // 삭제 예정
     @PostMapping("/create")
     public ResponseEntity<CreateMusicResponse> createSong(
             @RequestBody CreateMusicRequest request
