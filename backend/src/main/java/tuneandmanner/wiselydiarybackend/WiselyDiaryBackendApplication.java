@@ -12,12 +12,13 @@ import org.modelmapper.config.Configuration;
 import org.springframework.core.env.Environment;
 import tuneandmanner.wiselydiarybackend.auth.config.OpenAiConfig;
 import tuneandmanner.wiselydiarybackend.common.config.AwsProperties;
+import tuneandmanner.wiselydiarybackend.common.config.FileUploadProperties;
 import tuneandmanner.wiselydiarybackend.common.config.SupabaseProperties;
 
 @Slf4j
 @SpringBootApplication
 @EnableFeignClients
-@EnableConfigurationProperties({AwsProperties.class, SupabaseProperties.class, OpenAiConfig.class})
+@EnableConfigurationProperties({AwsProperties.class, SupabaseProperties.class, OpenAiConfig.class, FileUploadProperties.class})
 public class WiselyDiaryBackendApplication {
 
     @Bean
