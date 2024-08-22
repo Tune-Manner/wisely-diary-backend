@@ -27,7 +27,7 @@ public enum ExceptionCode {
 
     // 404 Error
     NOT_FOUND_DIARY_CODE(404, "유효한 일기 코드가 아닙니다."),
-    NOT_FOUND_TASK_ID(404, "유효한 음악 코드가 아닙니다."),
+    NOT_FOUND_MUSIC_CODE(404, "유효한 음악 코드가 아닙니다."),
     NOT_FOUND_SUMMARY_CODE(404, "유효한 요약 코드가 아닙니다."),
     NOT_FOUND_CLIP_ID(404, "유효한 음악 코드가 아닙니다."),
     NOT_FOUND_LETTER_CODE(404, "유효한 편지 코드가 아닙니다."),
