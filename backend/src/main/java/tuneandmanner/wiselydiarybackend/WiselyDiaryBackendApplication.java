@@ -7,12 +7,13 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.config.Configuration;
+import tuneandmanner.wiselydiarybackend.auth.config.OpenAiConfig;
 import tuneandmanner.wiselydiarybackend.common.config.AwsProperties;
 import tuneandmanner.wiselydiarybackend.common.config.SupabaseProperties;
 
 @SpringBootApplication
 @EnableFeignClients
-@EnableConfigurationProperties({AwsProperties.class, SupabaseProperties.class})
+@EnableConfigurationProperties({AwsProperties.class, SupabaseProperties.class, OpenAiConfig.class})
 public class WiselyDiaryBackendApplication {
 
     @Bean
