@@ -156,23 +156,41 @@ public class DiaryService {
         return result.get("response");
     }
 
+    // 일기 내용들 가져오기
     public DiaryDetailResponse getDiaryContents(DiaryDetailRequest request) {
         log.info("DiaryService.getDiaryContents - memberId: {}, date: {}", request.getMemberId(), request.getDate());
 
-        LocalDate date = LocalDate.parse(request.getDate(), DateTimeFormatter.ISO_DATE);
-        LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+        // 오늘 날짜
+        LocalDate today = LocalDate.now();
+
+        // request.getDate()를 사용하여 LocalDate로 변환
+        LocalDate requestDate;
+        try {
+            requestDate = LocalDate.parse(request.getDate(), DateTimeFormatter.ISO_DATE);
+        } catch (Exception e) {
+            log.error("Invalid date format in request: {}", request.getDate(), e);
+            return new DiaryDetailResponse(null, request.getDate(), "잘못된 날짜 형식입니다.");
+        }
+
+        LocalDateTime startOfDay = requestDate.atStartOfDay();
+        LocalDateTime endOfDay = requestDate.plusDays(1).atStartOfDay();
 
         return diaryRepository.findByMemberIdAndCreatedAtBetween(request.getMemberId(), startOfDay, endOfDay)
             .map(diary -> new DiaryDetailResponse(
-                diary.getDiaryCode(), // 추가된 diaryCode
+                diary.getDiaryCode(),
                 diary.getCreatedAt().toLocalDate().toString(),
                 diary.getDiaryContents()
             ))
-            .orElse(new DiaryDetailResponse(
-                null,
-                request.getDate(),
-                "해당 날짜의 일기를 찾을 수 없습니다."));
+                .orElseGet(() -> {
+                    // 날짜 비교
+                    if (requestDate.isBefore(today)) {
+                        return new DiaryDetailResponse(null, request.getDate(), "일기를 작성하지 않았습니다.");
+                    } else if (requestDate.isEqual(today)) {
+                        return new DiaryDetailResponse(null, request.getDate(), "오늘의 일기를 작성해보세요.");
+                    } else {
+                        return new DiaryDetailResponse(null, request.getDate(), "아직 작성할 때가 아닙니다! 조금만 기다려주세요.");
+                    }
+                });
     }
 
     public List<DiaryDetailResponse> getDiaryContentsbyMonth(DiaryDetailRequest request) {
