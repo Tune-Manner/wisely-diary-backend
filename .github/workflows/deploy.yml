@@ -120,6 +120,8 @@ jobs:
             Environment=\"AWS_S3_REGION=${{ secrets.AWS_S3_REGION }}\"
             Environment=\"AWS_S3_ENDPOINT=${{ secrets.AWS_S3_ENDPOINT }}\"
             Environment=\"APP_CARTOON_IMAGE_PATH=${{ secrets.APP_CARTOON_IMAGE_PATH }}\"
+            Environment=\"FILE_UPLOAD_MAX_FILE_SIZE=${{ secrets.FILE_UPLOAD_MAX_FILE_SIZE }}\"
+            Environment=\"FILE_UPLOAD_MAX_REQUEST_SIZE=${{ secrets.FILE_UPLOAD_MAX_REQUEST_SIZE }}\"
           
             [Install]
             WantedBy=multi-user.target" | sudo tee /etc/systemd/system/wisely-diary.service
