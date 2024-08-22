@@ -3,6 +3,7 @@ package tuneandmanner.wiselydiarybackend.cartoon.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,13 +66,9 @@ public class CartoonService {
 
 
     private Path getImageDirectory() throws IOException {
-        return Paths.get(resourceLoader.getResource(cartoonConfig.getImagePath()).getURI());
+        Resource resource = resourceLoader.getResource(cartoonConfig.getImagePath());
+        return Paths.get(resource.getURI());
     }
-
-    private String uploadImageToSupabase(String localImagePath) {
-        return supabaseStorageService.uploadImage(localImagePath);
-    }
-
 
     private String downloadImage(String imageUrl) {
         try {

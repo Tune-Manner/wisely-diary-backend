@@ -10,6 +10,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.UUID;
 @Slf4j
@@ -37,13 +40,13 @@ public class SupabaseStorageService {
     public String uploadImage(String localImagePath) {
         log.info("Attempting to upload image from path: {}", localImagePath);
         try {
-            File imageFile = new File(localImagePath);
-            if (!imageFile.exists()) {
+            Path imagePath = Paths.get(localImagePath);
+            if (!Files.exists(imagePath)) {
                 log.error("Image file does not exist: {}", localImagePath);
                 throw new RuntimeException("Image file does not exist: " + localImagePath);
             }
 
-            String fileName = UUID.randomUUID().toString() + "_" + imageFile.getName();
+            String fileName = UUID.randomUUID().toString() + "_" + imagePath.getFileName().toString();
             String uploadUrl = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + fileName;
             log.debug("Upload URL: {}", uploadUrl);
 
@@ -53,7 +56,8 @@ public class SupabaseStorageService {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("file", new FileSystemResource(imageFile));
+            body.add("file", new FileSystemResource(imagePath.toFile()));
+
 
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
