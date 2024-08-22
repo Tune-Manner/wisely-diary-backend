@@ -1,7 +1,7 @@
 package tuneandmanner.wiselydiarybackend.stt.controller;
 
-import lombok.RequiredArgsConstructor;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,39 +12,66 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.multipart.MultipartFile;
 import tuneandmanner.wiselydiarybackend.stt.dto.WhisperTranscriptionResponse;
 import tuneandmanner.wiselydiarybackend.stt.service.OpenAIClientService;
+
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
 public class WhisperController {
 
+	private static final Logger logger = LoggerFactory.getLogger(WhisperController.class);
 	private final OpenAIClientService openAIClientService;
+
+	public WhisperController(OpenAIClientService openAIClientService) {
+		this.openAIClientService = openAIClientService;
+	}
 
 	@PostMapping(value = "/transcription", consumes = "multipart/form-data")
 	public ResponseEntity<WhisperTranscriptionResponse> createTranscription(@RequestParam("file") MultipartFile file) {
-		try {
-			System.out.println("Received file: " + file.getOriginalFilename());
-			System.out.println("File size: " + file.getSize() + " bytes");
+		logger.info("Received file: {}", file.getOriginalFilename());
+		logger.info("File size: {} bytes", file.getSize());
 
-			// 파일 덮어쓰기 옵션 추가
-			Files.copy(file.getInputStream(), Paths.get("received_" + file.getOriginalFilename()),
-				StandardCopyOption.REPLACE_EXISTING);
+		Path tempFile = null;
+		try {
+			// 시스템의 임시 디렉토리 사용
+			String tempDir = System.getProperty("java.io.tmpdir");
+			tempFile = Paths.get(tempDir, "received_" + file.getOriginalFilename());
+
+			// 파일 덮어쓰기
+			Files.copy(file.getInputStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+
+			logger.info("File saved to: {}", tempFile);
+
+			// OpenAI 서비스 호출
+			WhisperTranscriptionResponse response = openAIClientService.createTranscription(file);
+
+			// 응답 반환
+			return ResponseEntity.ok()
+					.contentType(MediaType.APPLICATION_JSON)
+					.body(response);
 
 		} catch (IOException e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();  // 에러 발생 시 500 에러 반환
+			logger.error("Error processing file: ", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		} finally {
+			// 임시 파일 삭제
+			if (tempFile != null) {
+				try {
+					boolean deleted = Files.deleteIfExists(tempFile);
+					if (deleted) {
+						logger.info("Temporary file successfully deleted: {}", tempFile);
+					} else {
+						logger.warn("Temporary file did not exist or could not be deleted: {}", tempFile);
+					}
+				} catch (IOException e) {
+					logger.warn("Failed to delete temporary file: {}", tempFile, e);
+				}
+			}
 		}
-
-		WhisperTranscriptionResponse response = openAIClientService.createTranscription(file);
-
-		// 응답을 UTF-8로 인코딩하여 반환
-		return ResponseEntity.ok()
-			.contentType(MediaType.APPLICATION_JSON_UTF8)  // 응답 Content-Type을 UTF-8로 설정
-			.body(response);
 	}
 }
