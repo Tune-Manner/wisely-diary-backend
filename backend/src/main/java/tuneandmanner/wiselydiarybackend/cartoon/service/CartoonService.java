@@ -3,8 +3,10 @@ package tuneandmanner.wiselydiarybackend.cartoon.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tuneandmanner.wiselydiarybackend.cartoon.config.CartoonConfig;
 import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.Cartoon;
 import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.CartoonRepository;
 
@@ -58,9 +60,13 @@ public class CartoonService {
     private final EmotionRepository emotionRepository;
     private final VectorStoreService vectorStoreService;
     private final SupabaseStorageService supabaseStorageService;
+    private final ResourceLoader resourceLoader;
+    private final CartoonConfig cartoonConfig;
 
-    @Value("C:\\00_ILGI\\backend\\backend\\src\\main\\resources\\cartoonImage")  // YML에서 설정한 경로를 주입
-    private String imagePath;
+
+    private Path getImageDirectory() throws IOException {
+        return Paths.get(resourceLoader.getResource(cartoonConfig.getImagePath()).getURI());
+    }
 
     private String uploadImageToSupabase(String localImagePath) {
         return supabaseStorageService.uploadImage(localImagePath);
@@ -70,7 +76,7 @@ public class CartoonService {
     private String downloadImage(String imageUrl) {
         try (InputStream in = new URL(imageUrl).openStream()) {
             String fileName = Paths.get(new URL(imageUrl).getPath()).getFileName().toString();
-            Path targetPath = Paths.get(imagePath).resolve(fileName);
+            Path targetPath = getImageDirectory().resolve(fileName);
             Files.createDirectories(targetPath.getParent());
             Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
             return targetPath.toString();
