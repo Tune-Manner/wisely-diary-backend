@@ -10,9 +10,13 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.UUID;
 @Slf4j
@@ -37,16 +41,10 @@ public class SupabaseStorageService {
         this.bucketName = supabaseProperties.getBucket();
     }
 
-    public String uploadImage(String localImagePath) {
-        log.info("Attempting to upload image from path: {}", localImagePath);
+    public String uploadImageFromUrl(String imageUrl) {
+        log.info("Attempting to upload image from URL: {}", imageUrl);
         try {
-            Path imagePath = Paths.get(localImagePath);
-            if (!Files.exists(imagePath)) {
-                log.error("Image file does not exist: {}", localImagePath);
-                throw new RuntimeException("Image file does not exist: " + localImagePath);
-            }
-
-            String fileName = UUID.randomUUID().toString() + "_" + imagePath.getFileName().toString();
+            String fileName = UUID.randomUUID().toString() + ".png";
             String uploadUrl = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + fileName;
             log.debug("Upload URL: {}", uploadUrl);
 
@@ -56,8 +54,7 @@ public class SupabaseStorageService {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("file", new FileSystemResource(imagePath.toFile()));
-
+            body.add("file", new FileSystemResource(downloadImageFromUrl(imageUrl)));
 
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
@@ -81,5 +78,13 @@ public class SupabaseStorageService {
             log.error("Error uploading image to Supabase", e);
             throw new RuntimeException("Error uploading image to Supabase", e);
         }
+    }
+
+    private File downloadImageFromUrl(String imageUrl) throws IOException {
+        Path tempFile = Files.createTempFile(UUID.randomUUID().toString(), ".png");
+        try (InputStream in = new URL(imageUrl).openStream()) {
+            Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return tempFile.toFile();
     }
 }

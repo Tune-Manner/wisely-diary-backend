@@ -70,25 +70,6 @@ public class CartoonService {
         return Paths.get(resource.getURI());
     }
 
-    private String downloadImage(String imageUrl) {
-        try {
-            Path imageDir = getImageDirectory();
-            Files.createDirectories(imageDir);
-
-            String fileName = UUID.randomUUID().toString() + ".png";
-            Path targetPath = imageDir.resolve(fileName);
-
-            try (InputStream in = new URL(imageUrl).openStream()) {
-                Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
-            }
-
-            return targetPath.toString();
-        } catch (IOException e) {
-            log.error("Failed to download image from URL: {}", imageUrl, e);
-            throw new RuntimeException("Failed to download image", e);
-        }
-    }
-
     @Transactional
     public String createCartoonPrompt(CreateCartoonRequest request) {
         log.info("Creating cartoon prompt for diaryCode: {}", request.getDiaryCode());
@@ -108,17 +89,8 @@ public class CartoonService {
             String cartoonPath = dalleApiService.generateCartoonPrompt(emotion, member, diary.getDiaryContents());
             log.info("Generated cartoon path: {}", cartoonPath);
 
-            String localImagePath = downloadImage(cartoonPath);
-            log.info("Downloaded image to local path: {}", localImagePath);
-
-            String supabaseUrl;
-            try {
-                supabaseUrl = supabaseStorageService.uploadImage(localImagePath);
-                log.info("Uploaded image to Supabase: {}", supabaseUrl);
-            } catch (RuntimeException e) {
-                log.error("Failed to upload image to Supabase", e);
-                throw new RuntimeException("Failed to upload image to Supabase", e);
-            }
+            String supabaseUrl = supabaseStorageService.uploadImageFromUrl(cartoonPath);
+            log.info("Uploaded image to Supabase: {}", supabaseUrl);
 
             Cartoon cartoon = Cartoon.builder()
                     .cartoonPath(supabaseUrl)
@@ -140,8 +112,7 @@ public class CartoonService {
         log.info("Saving cartoon for diaryCode: {}", request.getDiaryCode());
 
         try {
-            String localImagePath = downloadImage(request.getCartoonPath());
-            String supabaseUrl = supabaseStorageService.uploadImage(localImagePath);
+            String supabaseUrl = supabaseStorageService.uploadImageFromUrl(request.getCartoonPath());
 
             Cartoon cartoon = Cartoon.builder()
                     .cartoonPath(supabaseUrl)
@@ -220,8 +191,8 @@ public class CartoonService {
             String imageUrl = dalleApiService.generateImage(prompt);
             log.info("Generated image URL: {}", imageUrl);
 
-            String localImagePath = downloadImage(imageUrl);
-            String supabaseUrl = supabaseStorageService.uploadImage(localImagePath);
+            String supabaseUrl = supabaseStorageService.uploadImageFromUrl(imageUrl);
+            log.info("Uploaded image to Supabase: {}", supabaseUrl);
 
             Cartoon cartoon = Cartoon.builder()
                     .cartoonPath(supabaseUrl)
