@@ -43,6 +43,8 @@ public class WiselyDiaryBackendApplication {
         log.info("spring.ai.openai.urls.base-url: {}", env.getProperty("spring.ai.openai.urls.base-url"));
         log.info("spring.ai.openai.urls.create-transcription-url: {}", env.getProperty("spring.ai.openai.urls.create-transcription-url"));
         log.info("app.cartoon.image-path: {}", env.getProperty("app.cartoon.image-path"));
+        log.info("file.upload.max-file-size: {}", env.getProperty("file.upload.max-file-size"));
+        log.info("file.upload.max-request-size: {}", env.getProperty("file.upload.max-request-size"));
 
     }
 
