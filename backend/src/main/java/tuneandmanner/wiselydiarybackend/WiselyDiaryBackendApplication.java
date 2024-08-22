@@ -41,6 +41,8 @@ public class WiselyDiaryBackendApplication {
         log.info("spring.ai.openai.audio-model: {}", env.getProperty("spring.ai.openai.audio-model"));
         log.info("spring.ai.openai.urls.base-url: {}", env.getProperty("spring.ai.openai.urls.base-url"));
         log.info("spring.ai.openai.urls.create-transcription-url: {}", env.getProperty("spring.ai.openai.urls.create-transcription-url"));
+        log.info("app.cartoon.image-path: {}", env.getProperty("app.cartoon.image-path"));
+
     }
 
     private static String maskApiKey(String apiKey) {
