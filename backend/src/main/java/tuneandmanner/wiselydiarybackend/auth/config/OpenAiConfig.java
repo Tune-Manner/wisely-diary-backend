@@ -21,7 +21,16 @@ public class OpenAiConfig {
     private String imageModel;
     private String imageQuality;
 
+    public OpenAiConfig() {
+        log.info("OpenAiConfig constructor called");
+    }
+
     @PostConstruct
+    public void init() {
+        log.info("OpenAiConfig initialized");
+        logConfig();
+    }
+
     public void logConfig() {
         if (apiKey != null && !apiKey.isEmpty()) {
             log.info("OpenAI API Key: {}", apiKey.substring(0, Math.min(apiKey.length(), 4)) + "...");
