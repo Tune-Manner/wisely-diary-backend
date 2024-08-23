@@ -82,20 +82,8 @@ public class EmotionService {
                                             // 감정 코드 빈도 비교
                                             int compare = e1.getValue().compareTo(e2.getValue());
                                             if (compare == 0) {
-                                                // 빈도가 동일한 경우, 가장 최근 일기의 감정 코드 선택
-                                                LocalDateTime latestDiary1 = diaries.stream()
-                                                        .filter(diary -> diary.getEmotionCode().equals(e1.getKey()))
-                                                        .max(Comparator.comparing(Diary::getCreatedAt))
-                                                        .map(Diary::getCreatedAt)
-                                                        .orElse(null);
-
-                                                LocalDateTime latestDiary2 = diaries.stream()
-                                                        .filter(diary -> diary.getEmotionCode().equals(e2.getKey()))
-                                                        .max(Comparator.comparing(Diary::getCreatedAt))
-                                                        .map(Diary::getCreatedAt)
-                                                        .orElse(null);
-
-                                                return latestDiary1.compareTo(latestDiary2); // 가장 최근 일기를 비교
+                                                // 빈도가 동일한 경우, emotion_code가 작은 것을 선택
+                                                return e2.getKey().compareTo(e1.getKey());
                                             }
                                             return compare;
                                         })
