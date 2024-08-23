@@ -3,6 +3,7 @@ package tuneandmanner.wiselydiarybackend.stt.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,7 +12,9 @@ import tuneandmanner.wiselydiarybackend.stt.client.OpenAIClient;
 import tuneandmanner.wiselydiarybackend.stt.dto.WhisperTranscriptionResponse;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 public class OpenAIClientService {
@@ -26,13 +29,70 @@ public class OpenAIClientService {
 		this.openAIClientConfig = openAIClientConfig;
 	}
 
-	public WhisperTranscriptionResponse createTranscription(FileSystemResource fileResource) {
+	public WhisperTranscriptionResponse createTranscription(FileSystemResource fileResource) throws IOException {
 		String model = openAIClientConfig.getAudioModel();
 		logger.info("Calling OpenAI API with model: {}", model);
-		logger.info("File name: {}, size: {} bytes", fileResource.getFilename(), fileResource.getFile().length());
+		logger.info("File name: {}, size: {} bytes", fileResource.getFilename(), fileResource.contentLength());
 
 		try {
-			WhisperTranscriptionResponse response = openAIClient.createTranscription(fileResource, model);
+			MultipartFile multipartFile = new MultipartFile() {
+				@Override
+				public String getName() {
+					return fileResource.getFilename();
+				}
+
+				@Override
+				public String getOriginalFilename() {
+					return fileResource.getFilename();
+				}
+
+				@Override
+				public String getContentType() {
+					return "audio/wav"; // 또는 적절한 MIME 타입
+				}
+
+				@Override
+				public boolean isEmpty() {
+                    try {
+                        return fileResource.contentLength() == 0;
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+				@Override
+				public long getSize() {
+                    try {
+                        return fileResource.contentLength();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+				@Override
+				public byte[] getBytes() throws IOException {
+					return fileResource.getInputStream().readAllBytes();
+				}
+
+				@Override
+				public InputStream getInputStream() throws IOException {
+					return fileResource.getInputStream();
+				}
+
+				@Override
+				public Resource getResource() {
+					return fileResource;
+				}
+
+				@Override
+				public void transferTo(File dest) throws IOException, IllegalStateException {
+					try (FileOutputStream fos = new FileOutputStream(dest)) {
+						fos.write(getBytes());
+					}
+				}
+			};
+
+			WhisperTranscriptionResponse response = openAIClient.createTranscription(multipartFile, model);
 			logger.info("Transcription completed successfully");
 			return response;
 		} catch (Exception e) {

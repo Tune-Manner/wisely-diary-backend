@@ -54,7 +54,7 @@ public class WhisperController {
 
 		File processedFile = null;
 		try {
-			if (file.getSize() > 25 * 1024 * 1024) { // If file is larger than 25MB
+			if (file.getSize() > 10 * 1024 * 1024) { // If file is larger than 25MB
 				processedFile = compressAudioFile(file);
 				logger.info("Compressed file size: {} bytes", processedFile.length());
 			} else {

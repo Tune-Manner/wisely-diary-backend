@@ -17,7 +17,7 @@ import tuneandmanner.wiselydiarybackend.auth.config.OpenAIClientConfig;
 public interface OpenAIClient {
 	@PostMapping(value = "/audio/transcriptions", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	WhisperTranscriptionResponse createTranscription(
-			@RequestPart("file") Resource file,
+			@RequestPart("file") MultipartFile file,
 			@RequestPart("model") String model
 	);
 }
