@@ -33,7 +33,15 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // feign clients
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'io.github.openfeign:feign-okhttp'
+    implementation 'io.github.openfeign:feign-jackson'
+    implementation 'io.github.openfeign:feign-slf4j'
+    implementation 'io.github.openfeign.form:feign-form'
+    implementation 'io.github.openfeign.form:feign-form-spring'
+
     implementation 'org.springframework.shell:spring-shell-starter'
     compileOnly 'org.projectlombok:lombok'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
@@ -45,7 +53,6 @@ dependencies {
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.3'
-//    implementation 'com.harium.supabase:core:0.0.1'
     implementation platform('software.amazon.awssdk:bom:2.20.56')
     implementation 'software.amazon.awssdk:s3'
 
