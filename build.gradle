@@ -51,6 +51,10 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.modelmapper/modelmapper
     implementation 'org.modelmapper:modelmapper:3.1.1'
+
+    // compress audio
+    implementation 'ws.schild:jave-core:3.3.1'
+    implementation 'ws.schild:jave-nativebin-linux64:3.3.1'
 }
 
 dependencyManagement {
