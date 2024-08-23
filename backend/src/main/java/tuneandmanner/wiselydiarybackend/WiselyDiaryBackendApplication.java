@@ -45,6 +45,7 @@ public class WiselyDiaryBackendApplication {
         log.info("app.cartoon.image-path: {}", env.getProperty("app.cartoon.image-path"));
         log.info("file.upload.max-file-size: {}", env.getProperty("file.upload.max-file-size"));
         log.info("file.upload.max-request-size: {}", env.getProperty("file.upload.max-request-size"));
+        log.info("suno.api.token: {}", env.getProperty("suno.api.token"));
 
     }
 
