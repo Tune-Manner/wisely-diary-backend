@@ -1,5 +1,6 @@
 package tuneandmanner.wiselydiarybackend.stt.controller;
 
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -32,7 +33,7 @@ public class WhisperController {
 	}
 
 	@PostMapping(value = "/transcription", consumes = "multipart/form-data")
-	public ResponseEntity<WhisperTranscriptionResponse> createTranscription(@RequestParam("file") MultipartFile file) {
+	public ResponseEntity<?> createTranscription(@RequestParam("file") MultipartFile file) {
 		logger.info("Received file: {}", file.getOriginalFilename());
 		logger.info("File size: {} bytes", file.getSize());
 
@@ -55,9 +56,22 @@ public class WhisperController {
 					.contentType(MediaType.APPLICATION_JSON)
 					.body(response);
 
+		} catch (FeignException e) {
+			logger.error("Feign client error: ", e);
+			if (e.status() == 413) {
+				return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+						.body("File size too large for OpenAI API");
+			}
+			return ResponseEntity.status(e.status())
+					.body("Error calling OpenAI API: " + e.getMessage());
 		} catch (IOException e) {
 			logger.error("Error processing file: ", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("Error processing the uploaded file");
+		} catch (Exception e) {
+			logger.error("Unexpected error: ", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("An unexpected error occurred");
 		} finally {
 			// 임시 파일 삭제
 			if (tempFile != null) {
