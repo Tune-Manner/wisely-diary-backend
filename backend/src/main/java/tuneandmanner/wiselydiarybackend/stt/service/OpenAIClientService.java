@@ -37,7 +37,7 @@ public class OpenAIClientService {
 			return response;
 		} catch (Exception e) {
 			logger.error("Error during transcription: ", e);
-			throw e; // 상위 레벨에서 처리할 수 있도록 예외를 다시 던집니다.
+			throw e;
 		}
 	}
 

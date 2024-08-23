@@ -52,8 +52,8 @@ public class WhisperController {
 					.body("Unsupported file format. Allowed formats are: " + String.join(", ", allowedExtensions));
 		}
 
+		File processedFile = null;
 		try {
-			File processedFile;
 			if (file.getSize() > 25 * 1024 * 1024) { // If file is larger than 25MB
 				processedFile = compressAudioFile(file);
 				logger.info("Compressed file size: {} bytes", processedFile.length());
@@ -61,10 +61,12 @@ public class WhisperController {
 				processedFile = convertMultipartFileToFile(file);
 			}
 
-			// Use processedFile for transcription
-			WhisperTranscriptionResponse response = openAIClientService.createTranscription(new FileSystemResource(processedFile));
+			logger.info("Processed file exists: {}", processedFile.exists());
+			logger.info("Processed file can read: {}", processedFile.canRead());
+			logger.info("Processed file absolute path: {}", processedFile.getAbsolutePath());
 
-			processedFile.delete(); // Clean up
+			FileSystemResource fileResource = new FileSystemResource(processedFile);
+			WhisperTranscriptionResponse response = openAIClientService.createTranscription(fileResource);
 
 			return ResponseEntity.ok()
 					.contentType(MediaType.APPLICATION_JSON)
@@ -90,6 +92,16 @@ public class WhisperController {
 			logger.error("Unexpected error: ", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body("An unexpected error occurred: " + e.getMessage());
+		} finally {
+			// 임시 파일 삭제
+			if (processedFile != null && processedFile.exists()) {
+				boolean deleted = processedFile.delete();
+				if (deleted) {
+					logger.info("Temporary file successfully deleted: {}", processedFile.getAbsolutePath());
+				} else {
+					logger.warn("Failed to delete temporary file: {}", processedFile.getAbsolutePath());
+				}
+			}
 		}
 	}
 

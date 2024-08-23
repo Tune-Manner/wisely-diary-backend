@@ -22,6 +22,11 @@ public class FeignConfig {
     }
 
     @Bean
+    public Encoder feignFormEncoder() {
+        return new SpringFormEncoder(new SpringEncoder(() -> new HttpMessageConverters(new RestTemplate().getMessageConverters())));
+    }
+
+    @Bean
     public feign.Logger.Level feignLoggerLevel() {
         return feign.Logger.Level.FULL;
     }

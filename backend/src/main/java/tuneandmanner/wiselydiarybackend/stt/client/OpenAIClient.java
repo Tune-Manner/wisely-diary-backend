@@ -3,6 +3,8 @@ package tuneandmanner.wiselydiarybackend.stt.client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,9 +15,9 @@ import tuneandmanner.wiselydiarybackend.auth.config.OpenAIClientConfig;
 
 @FeignClient(name = "openai-service", url = "https://api.openai.com/v1", configuration = {OpenAIClientConfig.class, FeignConfig.class})
 public interface OpenAIClient {
-	@PostMapping(value = "/audio/transcriptions", consumes = "multipart/form-data")
+	@PostMapping(value = "#{@openAIClientConfig.getCreateTranscriptionUrl()}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	WhisperTranscriptionResponse createTranscription(
-			@RequestPart("file") FileSystemResource file,
+			@RequestPart("file") Resource file,
 			@RequestPart("model") String model
 	);
 }
