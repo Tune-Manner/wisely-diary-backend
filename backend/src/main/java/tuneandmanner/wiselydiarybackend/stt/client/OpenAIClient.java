@@ -15,7 +15,7 @@ import tuneandmanner.wiselydiarybackend.auth.config.OpenAIClientConfig;
 
 @FeignClient(name = "openai-service", url = "https://api.openai.com/v1", configuration = {OpenAIClientConfig.class, FeignConfig.class})
 public interface OpenAIClient {
-	@PostMapping(value = "#{@openAIClientConfig.getCreateTranscriptionUrl()}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(value = "/audio/transcriptions", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	WhisperTranscriptionResponse createTranscription(
 			@RequestPart("file") Resource file,
 			@RequestPart("model") String model
