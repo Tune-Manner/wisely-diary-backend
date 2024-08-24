@@ -12,12 +12,13 @@ import org.modelmapper.config.Configuration;
 import org.springframework.core.env.Environment;
 import tuneandmanner.wiselydiarybackend.auth.config.OpenAiConfig;
 import tuneandmanner.wiselydiarybackend.common.config.AwsProperties;
+import tuneandmanner.wiselydiarybackend.common.config.FileUploadProperties;
 import tuneandmanner.wiselydiarybackend.common.config.SupabaseProperties;
 
 @Slf4j
 @SpringBootApplication
 @EnableFeignClients
-@EnableConfigurationProperties({AwsProperties.class, SupabaseProperties.class, OpenAiConfig.class})
+@EnableConfigurationProperties({AwsProperties.class, SupabaseProperties.class, OpenAiConfig.class, FileUploadProperties.class})
 public class WiselyDiaryBackendApplication {
 
     @Bean
@@ -42,6 +43,9 @@ public class WiselyDiaryBackendApplication {
         log.info("spring.ai.openai.urls.base-url: {}", env.getProperty("spring.ai.openai.urls.base-url"));
         log.info("spring.ai.openai.urls.create-transcription-url: {}", env.getProperty("spring.ai.openai.urls.create-transcription-url"));
         log.info("app.cartoon.image-path: {}", env.getProperty("app.cartoon.image-path"));
+        log.info("file.upload.max-file-size: {}", env.getProperty("file.upload.max-file-size"));
+        log.info("file.upload.max-request-size: {}", env.getProperty("file.upload.max-request-size"));
+        log.info("suno.api.token: {}", env.getProperty("suno.api.token"));
 
     }
 

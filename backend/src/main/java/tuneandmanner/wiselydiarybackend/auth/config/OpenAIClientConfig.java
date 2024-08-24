@@ -9,30 +9,31 @@ import feign.RequestTemplate;
 @Configuration
 public class OpenAIClientConfig {
 
-	@Value("${spring.ai.openai.api-key}")
-	private String apiKey;
+	private final OpenAiConfig openAiConfig;
 
-//	@Value("${spring.ai.openai.audio-model}")
-	@Value("whisper-1")
-	private String audioModel;
-
-	@Bean
-	public String getApiKey() {
-		return apiKey;
-	}
-
-	@Bean
-	public String getAudioModel() {
-		return audioModel;
+	public OpenAIClientConfig(OpenAiConfig openAiConfig) {
+		this.openAiConfig = openAiConfig;
 	}
 
 	@Bean
 	public RequestInterceptor requestInterceptor() {
-		return new RequestInterceptor() {
-			@Override
-			public void apply(RequestTemplate template) {
-				template.header("Authorization", "Bearer " + apiKey);
-			}
+		return template -> {
+			template.header("Authorization", "Bearer " + openAiConfig.getApiKey());
 		};
+	}
+
+	@Bean
+	public String getAudioModel() {
+		return openAiConfig.getAudioModel();
+	}
+
+	@Bean
+	public String getBaseUrl() {
+		return openAiConfig.getUrls().getBaseUrl();
+	}
+
+	@Bean
+	public String getCreateTranscriptionUrl() {
+		return openAiConfig.getUrls().getCreateTranscriptionUrl();
 	}
 }
