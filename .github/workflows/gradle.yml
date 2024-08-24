@@ -43,6 +43,11 @@ jobs:
           SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
           SPRING_AI_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SPRING_AI_OPENAI_CHAT_MODEL: ${{ secrets.SPRING_AI_OPENAI_CHAT_MODEL }}
+          SPRING_AI_OPENAI_IMAGE_SIZE: ${{ secrets.SPRING_AI_OPENAI_IMAGE_SIZE }}
+          SPRING_AI_OPENAI_IMAGE_MODEL: ${{ secrets.SPRING_AI_OPENAI_IMAGE_MODEL }}
+          SPRING_AI_OPENAI_IMAGE_QUALITY: ${{ secrets.SPRING_AI_OPENAI_IMAGE_QUALITY }}
+          SPRING_AI_OPENAI_AUDIO_MODEL: ${{ secrets.SPRING_AI_OPENAI_AUDIO_MODEL }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
@@ -52,6 +57,8 @@ jobs:
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
           AWS_S3_ENDPOINT: ${{ secrets.AWS_S3_ENDPOINT }}
+          SPRING_AI_OPENAI_URLS_CREATE_TRANSCRIPTION_URL: ${{ secrets.SPRING_AI_OPENAI_URLS_CREATE_TRANSCRIPTION_URL }}
+          SUNO_API_TOKEN: ${{ secrets.SUNO_API_TOKEN }}
           # 다른 필요한 환경 변수들도 여기에 추가하세요
 
       - name: Upload build artifacts
