@@ -19,7 +19,7 @@ public class ImageController {
     @PostMapping("/upload")
     public ResponseEntity<List<Image>> uploadImages(
             @RequestParam("diaryCode") Long diaryCode,
-            @RequestParam("images") List<MultipartFile> images) {
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
         List<Image> uploadedImages = imageService.uploadImages(diaryCode, images);
         return ResponseEntity.ok(uploadedImages);
     }
