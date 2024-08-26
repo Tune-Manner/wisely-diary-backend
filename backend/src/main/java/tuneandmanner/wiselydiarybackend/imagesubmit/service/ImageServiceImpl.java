@@ -42,6 +42,10 @@ public class ImageServiceImpl implements ImageService {
     public List<Image> uploadImages(Long diaryCode, List<MultipartFile> images) {
         List<Image> uploadedImages = new ArrayList<>();
 
+        if (images == null || images.isEmpty()) {
+            return uploadedImages;  // 이미지가 없는 경우 빈 리스트 반환
+        }
+
         for (MultipartFile file : images) {
             try {
                 String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
