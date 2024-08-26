@@ -20,8 +20,26 @@ public class OpenAiConfig {
     private String imageSize;
     private String imageModel;
     private String imageQuality;
+    private String audioModel;
+    private Urls urls;
+
+    @Getter
+    @Setter
+    public static class Urls {
+        private String baseUrl;
+        private String createTranscriptionUrl;
+    }
+
+    public OpenAiConfig() {
+        log.info("OpenAiConfig constructor called");
+    }
 
     @PostConstruct
+    public void init() {
+        log.info("OpenAiConfig initialized");
+        logConfig();
+    }
+
     public void logConfig() {
         if (apiKey != null && !apiKey.isEmpty()) {
             log.info("OpenAI API Key: {}", apiKey.substring(0, Math.min(apiKey.length(), 4)) + "...");
@@ -32,6 +50,9 @@ public class OpenAiConfig {
         log.info("DALL-E Image Model: {}", imageModel);
         log.info("DALL-E Image Size: {}", imageSize);
         log.info("DALL-E Image Quality: {}", imageQuality);
+        log.info("Whisper Audio Model: {}", audioModel);
+        log.info("Base URL: {}", urls.getBaseUrl());
+        log.info("Create Transcription URL: {}", urls.getCreateTranscriptionUrl());
     }
 
     @Bean

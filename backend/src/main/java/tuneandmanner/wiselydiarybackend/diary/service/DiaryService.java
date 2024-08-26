@@ -156,23 +156,58 @@ public class DiaryService {
         return result.get("response");
     }
 
+    /**
+     * 특정 날짜의 일기 내용을 조회하는 메서드
+     *
+     * @param request 회원 ID와 조회할 날짜 정보를 담고 있는 DTO
+     * @return 조회된 일기 정보 또는 상황에 따른 메시지를 담은 DiaryDetailResponse
+     */
     public DiaryDetailResponse getDiaryContents(DiaryDetailRequest request) {
+        // 메서드 호출 로깅
         log.info("DiaryService.getDiaryContents - memberId: {}, date: {}", request.getMemberId(), request.getDate());
 
-        LocalDate date = LocalDate.parse(request.getDate(), DateTimeFormatter.ISO_DATE);
-        LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+        // 현재 날짜 저장 (나중에 요청 날짜와 비교하기 위함)
+        LocalDate today = LocalDate.now();
 
-        return diaryRepository.findByMemberIdAndCreatedAtBetween(request.getMemberId(), startOfDay, endOfDay)
-            .map(diary -> new DiaryDetailResponse(
-                diary.getDiaryCode(), // 추가된 diaryCode
-                diary.getCreatedAt().toLocalDate().toString(),
-                diary.getDiaryContents()
-            ))
-            .orElse(new DiaryDetailResponse(
-                null,
-                request.getDate(),
-                "해당 날짜의 일기를 찾을 수 없습니다."));
+        LocalDate requestDate;
+        try {
+            // 요청받은 날짜 문자열을 LocalDate 객체로 파싱
+            requestDate = LocalDate.parse(request.getDate(), DateTimeFormatter.ISO_DATE);
+        } catch (Exception e) {
+            // 날짜 형식이 잘못된 경우 에러 로깅 후 에러 응답 반환
+            log.error("Invalid date format in request: {}", request.getDate(), e);
+            return new DiaryDetailResponse(null, request.getDate(), "잘못된 날짜 형식입니다.");
+        }
+
+        // 요청 날짜의 시작과 끝 시간 설정 (해당 날짜의 00:00:00부터 다음 날 00:00:00 직전까지)
+        LocalDateTime startOfDay = requestDate.atStartOfDay();
+        LocalDateTime endOfDay = requestDate.plusDays(1).atStartOfDay();
+
+        // 데이터베이스에서 해당 기간 내 가장 최근의 일기를 조회
+        Optional<Diary> diaryOptional = diaryRepository.findFirstByMemberIdAndCreatedAtBetweenOrderByCreatedAtDesc(
+                request.getMemberId(), startOfDay, endOfDay);
+
+        if (diaryOptional.isPresent()) {
+            // 일기가 존재하는 경우
+            Diary diary = diaryOptional.get();
+            return new DiaryDetailResponse(
+                    diary.getDiaryCode(),
+                    diary.getCreatedAt().toLocalDate().toString(),
+                    diary.getDiaryContents()
+            );
+        } else {
+            // 일기가 존재하지 않는 경우, 요청 날짜에 따라 다른 메시지 반환
+            if (requestDate.isBefore(today)) {
+                // 과거 날짜인 경우
+                return new DiaryDetailResponse(null, request.getDate(), "일기를 작성하지 않았습니다.");
+            } else if (requestDate.isEqual(today)) {
+                // 오늘 날짜인 경우
+                return new DiaryDetailResponse(null, request.getDate(), "오늘의 일기를 작성해보세요.");
+            } else {
+                // 미래 날짜인 경우
+                return new DiaryDetailResponse(null, request.getDate(), "아직 작성할 때가 아닙니다! 조금만 기다려주세요.");
+            }
+        }
     }
 
     public List<DiaryDetailResponse> getDiaryContentsbyMonth(DiaryDetailRequest request) {

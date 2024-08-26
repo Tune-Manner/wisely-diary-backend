@@ -3,8 +3,11 @@ package tuneandmanner.wiselydiarybackend.cartoon.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tuneandmanner.wiselydiarybackend.cartoon.config.CartoonConfig;
 import tuneandmanner.wiselydiarybackend.cartoon.domain.entity.Cartoon;
 import tuneandmanner.wiselydiarybackend.cartoon.domain.repository.CartoonRepository;
 
@@ -58,44 +61,37 @@ public class CartoonService {
     private final EmotionRepository emotionRepository;
     private final VectorStoreService vectorStoreService;
     private final SupabaseStorageService supabaseStorageService;
+    private final ResourceLoader resourceLoader;
+    private final CartoonConfig cartoonConfig;
 
-    @Value("C:\\00_ILGI\\backend\\backend\\src\\main\\resources\\cartoonImage")  // YML에서 설정한 경로를 주입
-    private String imagePath;
 
-    private String uploadImageToSupabase(String localImagePath) {
-        return supabaseStorageService.uploadImage(localImagePath);
+    private Path getImageDirectory() throws IOException {
+        Resource resource = resourceLoader.getResource(cartoonConfig.getImagePath());
+        return Paths.get(resource.getURI());
     }
 
-
-    private String downloadImage(String imageUrl) {
-        try (InputStream in = new URL(imageUrl).openStream()) {
-            String fileName = Paths.get(new URL(imageUrl).getPath()).getFileName().toString();
-            Path targetPath = Paths.get(imagePath).resolve(fileName);
-            Files.createDirectories(targetPath.getParent());
-            Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
-            return targetPath.toString();
-        } catch (IOException e) {
-            log.error("Failed to download image", e);
-            throw new RuntimeException("Failed to download image", e);
-        }
-    }
     @Transactional
     public String createCartoonPrompt(CreateCartoonRequest request) {
-        log.info("CartoonService.Create cartoon prompt");
+        log.info("Creating cartoon prompt for diaryCode: {}", request.getDiaryCode());
 
-        Diary diary = diaryRepository.findById(request.getDiaryCode())
-                .orElseThrow(() -> new RuntimeException("Diary summary not found"));
-        Member member = memberRepository.findByMemberId(request.getMemberId());
-        Emotion emotion = emotionRepository.findById(diary.getEmotionCode())
-                .orElseThrow(() -> new RuntimeException("Emotion not found"));
         try {
+            Diary diary = diaryRepository.findById(request.getDiaryCode())
+                    .orElseThrow(() -> new RuntimeException("Diary not found for diaryCode: " + request.getDiaryCode()));
+
+            Member member = memberRepository.findByMemberId(request.getMemberId());
+            if (member == null) {
+                throw new RuntimeException("Member not found for memberId: " + request.getMemberId());
+            }
+
+            Emotion emotion = emotionRepository.findById(diary.getEmotionCode())
+                    .orElseThrow(() -> new RuntimeException("Emotion not found for emotionCode: " + diary.getEmotionCode()));
+
             String cartoonPath = dalleApiService.generateCartoonPrompt(emotion, member, diary.getDiaryContents());
-            // Download and upload to Supabase
-            String localImagePath = downloadImage(cartoonPath);
-            String supabaseUrl = uploadImageToSupabase(localImagePath);
+            log.info("Generated cartoon path: {}", cartoonPath);
 
+            String supabaseUrl = supabaseStorageService.uploadImageFromUrl(cartoonPath);
+            log.info("Uploaded image to Supabase: {}", supabaseUrl);
 
-            // 여기에 데이터베이스 저장 로직 추가
             Cartoon cartoon = Cartoon.builder()
                     .cartoonPath(supabaseUrl)
                     .diaryCode(request.getDiaryCode())
@@ -106,30 +102,35 @@ public class CartoonService {
 
             return supabaseUrl;
         } catch (Exception e) {
-            log.error("Error creating cartoon", e);
+            log.error("Error creating cartoon for diaryCode: {}", request.getDiaryCode(), e);
             throw new RuntimeException("Failed to create cartoon", e);
         }
     }
 
     @Transactional
     public Long saveCartoon(SaveCartoonRequest request) {
-        // Download the image from the URL and upload to Supabase
-        String localImagePath = downloadImage(request.getCartoonPath());
-        String supabaseUrl = uploadImageToSupabase(localImagePath);
+        log.info("Saving cartoon for diaryCode: {}", request.getDiaryCode());
 
-        // Save the cartoon with the Supabase URL
-        Cartoon cartoon = Cartoon.builder()
-                .cartoonPath(supabaseUrl)
-                .diaryCode(request.getDiaryCode())
-                .createdAt(LocalDateTime.now())
-                .build();
+        try {
+            String supabaseUrl = supabaseStorageService.uploadImageFromUrl(request.getCartoonPath());
 
-        Cartoon savedCartoon = cartoonRepository.save(cartoon);
-        return savedCartoon.getCartoonCode();
+            Cartoon cartoon = Cartoon.builder()
+                    .cartoonPath(supabaseUrl)
+                    .diaryCode(request.getDiaryCode())
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            Cartoon savedCartoon = cartoonRepository.save(cartoon);
+            log.info("Saved cartoon with code: {}", savedCartoon.getCartoonCode());
+            return savedCartoon.getCartoonCode();
+        } catch (Exception e) {
+            log.error("Error saving cartoon for diaryCode: {}", request.getDiaryCode(), e);
+            throw new RuntimeException("Failed to save cartoon", e);
+        }
     }
 
     public List<InquiryCartoonResponse> findCartoon(LocalDate date, String memberId) {
-        log.info("CartoonService.findCartoon for date: {} and memberId: {}", date, memberId);
+        log.info("Finding cartoons for date: {} and memberId: {}", date, memberId);
 
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
@@ -137,18 +138,14 @@ public class CartoonService {
         List<Diary> diaries = diaryRepository.findByMemberIdAndCreatedAtBetweenAndDiaryStatus(
                 memberId, startOfDay, endOfDay, "EXIST");
 
-        log.info("로그1"+diaries);
         if (diaries.isEmpty()) {
             log.info("No diaries found for the given date and member");
             return Collections.emptyList();
         }
-        log.info("로그1"+diaries);
 
         List<Long> diaryCodes = diaries.stream()
                 .map(Diary::getDiaryCode)
                 .collect(Collectors.toList());
-
-
 
         List<Cartoon> cartoons = cartoonRepository.findByDiaryCodeInAndCreatedAtBetween(
                 diaryCodes, startOfDay, endOfDay);
@@ -165,53 +162,55 @@ public class CartoonService {
 
     @Transactional
     public String createLetterCartoonPrompt(CreateCartoonRequest request) {
-        log.info("CartoonService.createLetterCartoonPrompt 시작. diaryCode: {}", request.getDiaryCode());
+        log.info("Creating letter cartoon prompt for diaryCode: {}", request.getDiaryCode());
 
-        // 1. 일기와 감정 찾기
-        Diary diary = diaryRepository.findById(request.getDiaryCode())
-                .orElseThrow(() -> new RuntimeException("일기를 찾을 수 없습니다."));
-        Emotion emotion = emotionRepository.findById(diary.getEmotionCode())
-                .orElseThrow(() -> new RuntimeException("감정을 찾을 수 없습니다."));
+        try {
+            Diary diary = diaryRepository.findById(request.getDiaryCode())
+                    .orElseThrow(() -> new RuntimeException("Diary not found for diaryCode: " + request.getDiaryCode()));
 
-        String emotionContents = getEmotionContents(emotion.getEmotionCode());
+            Emotion emotion = emotionRepository.findById(diary.getEmotionCode())
+                    .orElseThrow(() -> new RuntimeException("Emotion not found for emotionCode: " + diary.getEmotionCode()));
 
-        // 2. 벡터 스토어에서 유사한 문서 검색
-        List<String> similarDocuments = vectorStoreService.searchSimilarCartoonDocuments(emotionContents, "image");
-        if (similarDocuments.size() < 2) {
-            throw new RuntimeException("감정에 대한 색감 또는 그림체 정보를 찾을 수 없습니다: " + emotionContents);
+            String emotionContents = getEmotionContents(emotion.getEmotionCode());
+
+            List<String> similarDocuments = vectorStoreService.searchSimilarCartoonDocuments(emotionContents, "image");
+            if (similarDocuments.size() < 2) {
+                throw new RuntimeException("Insufficient similar documents found for emotion: " + emotionContents);
+            }
+
+            String colors = similarDocuments.get(0).split(":", 2)[1].trim();
+            String style = similarDocuments.get(1).split(":", 2)[1].trim();
+
+            String prompt = String.format(
+                    "감정: %s\n색감: %s\n그림체: %s\n\n'%s'\n\n을 이용해서 일기에서 주인공이 느꼈던 감정이 잘 느껴지게 매우 추상적으로 표현해서 한 장의 추상화로 그려주세요. 이미지를 별도의 패널이나 섹션으로 분할하지 마십시오.",
+                    emotionContents, colors, style, diary.getDiaryContents()
+            );
+
+            log.info("Generated prompt: {}", prompt);
+
+            String imageUrl = dalleApiService.generateImage(prompt);
+            log.info("Generated image URL: {}", imageUrl);
+
+            String supabaseUrl = supabaseStorageService.uploadImageFromUrl(imageUrl);
+            log.info("Uploaded image to Supabase: {}", supabaseUrl);
+
+            Cartoon cartoon = Cartoon.builder()
+                    .cartoonPath(supabaseUrl)
+                    .diaryCode(diary.getDiaryCode())
+                    .createdAt(LocalDateTime.now())
+                    .type("Letter")
+                    .build();
+            cartoonRepository.save(cartoon);
+
+            return supabaseUrl;
+        } catch (Exception e) {
+            log.error("Error creating letter cartoon for diaryCode: {}", request.getDiaryCode(), e);
+            throw new RuntimeException("Failed to create letter cartoon", e);
         }
-
-        // 3. 색감과 그림체 정보 파싱
-        String colors = similarDocuments.get(0).split(":", 2)[1].trim();
-        String style = similarDocuments.get(1).split(":", 2)[1].trim();
-
-        // 4. 프롬프트 구성
-        String prompt = String.format(
-                "감정: %s\n색감: %s\n그림체: %s\n\n'%s'\n\n을 이용해서 일기에서 주인공이 느꼈던 감정이 잘 느껴지게 매우 추상적으로 표현해서 한 장의 추상화로 그려주세요.이미지를 별도의 패널이나 섹션으로 분할하지 마십시오.",
-                emotionContents, colors, style, diary.getDiaryContents()
-        );
-
-        log.info("생성된 프롬프트: {}", prompt);
-
-        // 5. DALL-E API를 사용하여 이미지 생성
-        String imageUrl = dalleApiService.generateImage(prompt);
-
-        // Download and upload to Supabase
-        String localImagePath = downloadImage(imageUrl);
-        String supabaseUrl = uploadImageToSupabase(localImagePath);
-
-        Cartoon cartoon = Cartoon.builder()
-                .cartoonPath(supabaseUrl)
-                .diaryCode(diary.getDiaryCode())
-                .createdAt(LocalDateTime.now())
-                .type("Letter")
-                .build();
-        cartoonRepository.save(cartoon);
-        return supabaseUrl;
     }
 
     private String getEmotionContents(Integer emotionCode) {
-        switch (emotionCode.intValue()) {
+        switch (emotionCode) {
             case 1: return "걱정";
             case 2: return "뿌듯";
             case 3: return "감사";
