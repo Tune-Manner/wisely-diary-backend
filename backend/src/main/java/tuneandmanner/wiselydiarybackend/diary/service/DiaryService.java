@@ -218,14 +218,14 @@ public class DiaryService {
         LocalDateTime endOfMonth = date.withDayOfMonth(date.lengthOfMonth()).atTime(23, 59, 59);
 
         List<Diary> diaries = diaryRepository.findByMemberIdAndCreatedAtBetweenAndDiaryStatusOrderByCreatedAtDesc(
-            request.getMemberId(), startOfMonth, endOfMonth, "EXIST");
+                request.getMemberId(), startOfMonth, endOfMonth, "EXIST");
 
         return diaries.stream()
-            .map(diary -> new DiaryDetailResponse(
-                diary.getDiaryCode(), // 추가된 diaryCode
-                diary.getCreatedAt().toLocalDate().toString(),
-                diary.getDiaryContents()))
-            .collect(Collectors.toList());
+                .map(diary -> new DiaryDetailResponse(
+                        diary.getDiaryCode(), // 추가된 diaryCode
+                        diary.getCreatedAt().toLocalDate().toString(),
+                        diary.getDiaryContents()))
+                .collect(Collectors.toList());
     }
 
     public String generateDiaryEntry(String prompt) {
@@ -266,12 +266,12 @@ public class DiaryService {
 
     public Long saveDiaryEntry(String diaryContent, String memberId, int emotionCode) {
         Diary diary = Diary.builder()
-            .diaryContents(diaryContent)
-            .memberId(memberId)
-            .createdAt(LocalDateTime.now())
-            .emotionCode(emotionCode)
-            .diaryStatus("EXIST")
-            .build();
+                .diaryContents(diaryContent)
+                .memberId(memberId)
+                .createdAt(LocalDateTime.now())
+                .emotionCode(emotionCode)
+                .diaryStatus("EXIST")
+                .build();
 
         Diary savedDiary = diaryRepository.save(diary);
         return savedDiary.getDiaryCode();
@@ -281,12 +281,12 @@ public class DiaryService {
     public ModifyContentResponseDTO modifyDiaryContent(ModifyDiaryContentRequestDTO modifyDiaryContentRequestDTO) {
 
         Diary diary = diaryRepository.findByDiaryCode(modifyDiaryContentRequestDTO.getDiaryCode())
-            .orElseThrow(() -> new EntityNotFoundException("exception.data.entityNotFound"));
+                .orElseThrow(() -> new EntityNotFoundException("exception.data.entityNotFound"));
 
         Diary updatedDiary = diary.toBuilder()
-            .diaryContents(modifyDiaryContentRequestDTO.getDiaryContent())
-            .updatedAt(LocalDateTime.now())
-            .build();
+                .diaryContents(modifyDiaryContentRequestDTO.getDiaryContent())
+                .updatedAt(LocalDateTime.now())
+                .build();
 
         updatedDiary = diaryRepository.save(updatedDiary);
 
