@@ -94,6 +94,10 @@ public class OpenAIClientService {
 
 			WhisperTranscriptionResponse response = openAIClient.createTranscription(multipartFile, model);
 			logger.info("Transcription completed successfully");
+
+			// 트랜스크립션 결과 로깅
+			logger.info("Transcription result: {}", response.getText());
+
 			return response;
 		} catch (Exception e) {
 			logger.error("Error during transcription: ", e);
