@@ -9,12 +9,13 @@
 
 <br/>
 
+
 # 🎯 핵심 개발 목표
 
 <table>
   <tr>
     <td>
-      <img src="https://github.com/user-attachments/assets/0197fb83-1ad5-4b09-b402-b4531c7832ba" height="100" alt="일기로운 슬기생활 로고">
+      <img src="https://github.com/user-attachments/assets/d6e7cce3-b171-4c48-8fa9-a4c76d4a48e4" height="100" alt="일기로운 슬기생활 로고">
     </td>
     <td>
       <h2>핵심 개발 목표</h2>
