@@ -77,7 +77,7 @@ public class DalleApiService {
                 "'" + prompt + "'" +
                 "\n" +
                 "\n" +
-                "오늘 일기를 한문장으로 요약해줘. \n" +
+                "오늘 일기를 한 문장으로 요약해줘. \n" +
                 "그 문장을 Minimalist Style 일러스트로 만들어줘. 텍스트 없이 만들어줘.";
 
         refinedPrompt = truncatePrompt(refinedPrompt, 1000);  // DALL-E 3 has a 4000 character limit

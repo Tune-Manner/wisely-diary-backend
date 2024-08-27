@@ -33,8 +33,8 @@ public class DiaryController {
         DiaryDetailResponse response = diaryService.getDiaryContents(request);
 
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
-            .body(response);
+                .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
+                .body(response);
     }
 
     // 선택한 달의 일기 내용들 가져오기
@@ -73,8 +73,8 @@ public class DiaryController {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Missing required parameters");
             return ResponseEntity.badRequest()
-                .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
-                .body((Map) errorResponse);
+                    .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
+                    .body((Map) errorResponse);
         }
 
         try {
@@ -88,29 +88,29 @@ public class DiaryController {
 
             log.info("Successfully generated and saved diary entry with diaryCode: {}", diaryCode);
             return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
-                .body(response);
+                    .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
+                    .body(response);
         } catch (NumberFormatException e) {
             log.error("Invalid emotion code format", e);
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Invalid emotion code format");
             return ResponseEntity.badRequest()
-                .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
-                .body((Map) errorResponse);
+                    .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
+                    .body((Map) errorResponse);
         } catch (Exception e) {
             log.error("Failed to generate diary entry", e);
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Failed to generate diary entry: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
-                .body((Map) errorResponse);
+                    .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
+                    .body((Map) errorResponse);
         }
     }
 
     @PutMapping("/modify/{diaryCode}")
     public ResponseEntity<ModifyContentResponseDTO> modifyDiaryContent(
-        @PathVariable Long diaryCode,
-        @RequestBody ModifyDiaryContentRequestDTO modifyDiaryContentRequestDTO) {
+            @PathVariable Long diaryCode,
+            @RequestBody ModifyDiaryContentRequestDTO modifyDiaryContentRequestDTO) {
 
         // Request DTO에 다이어리 코드 설정
         modifyDiaryContentRequestDTO.setDiaryCode(diaryCode);
@@ -121,12 +121,12 @@ public class DiaryController {
         // 수정된 일기 내용 응답
         if (responseModifyContent != null) {
             return ResponseEntity.ok()
-                .contentType(org.springframework.http.MediaType.APPLICATION_JSON_UTF8)
-                .body(responseModifyContent);
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON_UTF8)
+                    .body(responseModifyContent);
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
-                .body(null);
+                    .header(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
+                    .body(null);
         }
     }
 }
